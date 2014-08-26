@@ -6,6 +6,7 @@ A short description of your package.
 
 ![A screenshot of your spankin' package](https://f.cloud.github.com/assets/69169/2290250/c35d867a-a017-11e3-86be-cd7c5bf3ff9b.gif)
 
+* Скачайте последний Атом https://github.com/atom/atom/releases
 * Для запуска студии в Атоме предварительно экспортируйте for_atom.xml в произвольную область Cache и скомпилируйте
 * В терминале выполните do ##class(MDG.Request).CreateBroker("/mdg-dev") или самостоятельно создайте брокер /mdg-dev
   * будет создан брокер и временная папка c:\temp где будут храниться проекты
