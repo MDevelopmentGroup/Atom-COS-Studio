@@ -1,0 +1,16 @@
+# See https://atom.io/docs/latest/creating-a-package#menus for more details
+
+
+'menu': [
+  {
+    'label': 'Packages'
+    'submenu': [
+      'label': 'cache-studio'
+      'submenu': [
+        { 'label': 'Namespace', 'command': 'cache-studio:namespace' },
+        { 'label': 'Compile', 'command': 'cache-studio:compile' },
+        { 'label': 'Termital', 'command': 'cache-studio:termilal' }
+      ]
+    ]
+  }
+]
