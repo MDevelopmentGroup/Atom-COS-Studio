@@ -64,7 +64,7 @@ class CacheStudioView extends View
       StudioAPI.UpdateClass.data.text=editor.getText()
       StudioAPI.updateclass (status) =>
         if @outputView instanceof OutputView
-          @outputView.save(status,@getProperties().file)
+          @outputView.save(status,status,@getProperties().file)
         else
           @outputView= new OutputView()
           @outputView.show()

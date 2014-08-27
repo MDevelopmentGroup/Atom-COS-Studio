@@ -22,11 +22,16 @@ class OutputView extends View
     @refresh()
   clear: ->
     @output.html('')
-  save: (state, text) ->
+  save: (state,text,classname) ->
     #pre = document.createElement('pre')
     #node = document.createTextNode(text)
     #pre.appendChild(node)
     state=parseInt(state)
+    if text==undefined
+      text=''
+    if classname==undefined
+      classname=''
+    @output.append(classname+'\n')
     @output.append(text)
 
 
