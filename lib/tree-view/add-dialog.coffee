@@ -6,7 +6,7 @@ module.exports =
 class AddDialog extends Dialog
   constructor: (initialPath, isCreatingFile) ->
     @isCreatingFile = isCreatingFile
-
+    console.log initialPath
     if fs.isFileSync(initialPath)
       directoryPath = path.dirname(initialPath)
     else

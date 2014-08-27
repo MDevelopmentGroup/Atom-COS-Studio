@@ -65,5 +65,7 @@ class File extends Model
         newStatus = 'added'
 
     @status = newStatus if newStatus isnt @status
+  write: (text) ->
+    console.log "ТУТ " + text
   save: ->
     console.log "ТУТ"

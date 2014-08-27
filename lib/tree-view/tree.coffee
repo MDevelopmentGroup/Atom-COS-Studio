@@ -17,6 +17,7 @@ module.exports =
     atom.workspaceView.command 'tree-view:toggle-focus', => @createView().toggleFocus()
     atom.workspaceView.command 'tree-view:reveal-active-file', => @createView().revealActiveFile()
     atom.workspaceView.command 'tree-view:toggle-side', => @createView().toggleSide()
+    #atom.workspaceView.command 'cache-studio:add-file', => @createView().add(true)
     atom.workspaceView.command 'tree-view:add-file', => @createView().add(true)
     atom.workspaceView.command 'tree-view:add-folder', => @createView().add(false)
     atom.workspaceView.command 'tree-view:duplicate', => @createView().copySelectedEntry()

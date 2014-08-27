@@ -34,6 +34,8 @@ class FileView extends View
 
   beforeRemove: ->
     @file.destroy()
+  write: (text) ->
+    console.log "ТУТ " + text
   save:->
     console.log atom.workspace.getActiveEditor()
     console.log @file

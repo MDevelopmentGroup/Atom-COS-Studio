@@ -20,7 +20,7 @@ class TreeView extends ScrollView
   @content: ->
     @div class: 'tree-view-resizer tool-panel', 'data-show-on-right-side': atom.config.get('tree-view.showOnRightSide'), =>
       @div class: 'tree-view-scroller', outlet: 'scroller', =>
-        @ol class: 'tree-view full-menu list-tree has-collapsable-children focusable-panel', tabindex: -1, outlet: 'list'
+        @ol class: 'tree-view-cache full-menu list-tree has-collapsable-children focusable-panel', tabindex: -1, outlet: 'list'
       @div class: 'tree-view-resize-handle', outlet: 'resizeHandle'
 
   initialize: (state) ->
@@ -81,7 +81,7 @@ class TreeView extends ScrollView
     @command 'tool-panel:unfocus', => @unfocus()
     @command 'tree-view:toggleVcsIgnoredFiles', =>
       atom.config.toggle 'tree-view.hideVcsIgnoredFiles'
-
+    atom.workspaceView.command 'cache-studio:add-file', => @add(true)
     @on 'tree-view:directory-modified', =>
       if @hasFocus()
         @selectEntryForPath(@selectedPath) if @selectedPath
@@ -506,9 +506,9 @@ class TreeView extends ScrollView
   add: (isCreatingFile) ->
     selectedEntry = @selectedEntry() or @root
     selectedPath = selectedEntry.getPath()
-
     AddDialog ?= require './add-dialog'
     dialog = new AddDialog(selectedPath, isCreatingFile)
+    console.log dialog
     dialog.on 'directory-created', (event, createdPath) =>
       @entryForPath(createdPath).reload()
       @selectEntryForPath(createdPath)

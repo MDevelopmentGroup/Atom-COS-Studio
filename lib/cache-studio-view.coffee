@@ -1,8 +1,10 @@
 {View} = require 'atom'
 StudioAPI= require 'StudioAPI'
 SelectNameSpaceView=require './view/select-namespace-view'
+Tree=require './tree-view/tree'
 TreeView=require './tree-view/tree-view'
 TerminalView=require './view/terminal-view'
+OutputView=require './view/output-view'
 #File=require './tree-view/file'
 #FileView=require './tree-view/file-view'
 module.exports =
@@ -16,13 +18,17 @@ class CacheStudioView extends View
     atom.workspaceView.command "cache-studio:namespace", => @namespace()
     atom.workspaceView.command "cache-studio:compile", => @compile()
     atom.workspaceView.command "cache-studio:termilal", => @termilal()
+    atom.workspaceView.command "cache-studio:output", => @output()
+    #atom.workspaceView.command "tree-view:termilal", => @termilal()
     atom.workspaceView.command 'core:save', => @save()
-    #atom.
-#    atom.project.setPath('C:/InterSystems/Cache/CSP/dance')
+
     @treeView =new TreeView()
+    Tree.activate({})
     atom.workspace.registerOpener (uriToOpen) ->
       if 'cache-studio://terminal-view'==uriToOpen
         return new TerminalView()
+      #if 'cache-studio://output-view'==uriToOpen
+      #  return new OutputView({})
 
   # Returns an object that can be retrieved when package is activated
   serialize: ->
@@ -37,9 +43,6 @@ class CacheStudioView extends View
     else
       atom.workspaceView.append(this)
   namespace: ->
-    #TreeView =new TreeView({directoryExpansionStates:'C:/temp/ILDARSHOW'})
-    #TreeView.show()
-    #console.log TreeView
     selectNameSpaceView=new SelectNameSpaceView()
     selectNameSpaceView.success (namespace) =>
       @NameSpace=namespace
@@ -47,7 +50,6 @@ class CacheStudioView extends View
       StudioAPI.getpath (fullpath) =>
         atom.project.setPath(fullpath.Path)
         @treeView.toggle()
-        #atom.project.relativize(namespace)
       selectNameSpaceView.detach()
     selectNameSpaceView.cancel (call) =>
       selectNameSpaceView.detach()
@@ -72,6 +74,7 @@ class CacheStudioView extends View
   getProperties:  ->
     name = ''
     namespace=''
+    folder=''
     editor=atom.workspace.getActiveEditor()
     path=editor.getPath()
     file= path.substr((path.indexOf('Classes')+8), path.length).replace('\\', '.')
@@ -81,7 +84,8 @@ class CacheStudioView extends View
     type=file.substr((file.length-3), file.length)
     name=file.substr(0, (file.length-4))
 
-    'namespace': namespace
+    'namespace':namespace
+    'folder':folder
     'name':name
     'path': path
     'file':file
@@ -89,3 +93,6 @@ class CacheStudioView extends View
   termilal: ->
     uri='cache-studio://terminal-view'
     atom.workspace.open(uri, split: 'left', searchAllPanes: false).done (terminalView) ->
+  output: ->
+    @outputView= new OutputView()
+    @outputView.show(1,'w wrg wertgh wrtgh srtg werrtg \n sertgwsergwe gwerrtg\nersergwsertgwsertg')

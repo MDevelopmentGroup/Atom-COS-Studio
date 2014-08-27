@@ -1,5 +1,15 @@
 # See https://atom.io/docs/latest/creating-a-package#menus for more details
 
+'context-menu':
+  '.tree-view-cache.full-menu':
+    'Open'      : 'cache-studio:open'
+    'Add Class' : 'cache-studio:add-class'
+    'Add File'  : 'cache-studio:add-file'
+    'Add Folder': 'cache-studio:add-folder'
+    'Delete'    : 'cache-studio:delete'
+    'Refresh'   : 'cache-studio:refresh'
+
+
 
 'menu': [
   {
@@ -9,7 +19,8 @@
       'submenu': [
         { 'label': 'Namespace', 'command': 'cache-studio:namespace' },
         { 'label': 'Compile', 'command': 'cache-studio:compile' },
-        { 'label': 'Termital', 'command': 'cache-studio:termilal' }
+        { 'label': 'Termital', 'command': 'cache-studio:termilal' },
+        { 'label': 'Output', 'command': 'cache-studio:output' }
       ]
     ]
   }
