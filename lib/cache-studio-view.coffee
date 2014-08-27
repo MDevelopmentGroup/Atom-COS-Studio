@@ -9,6 +9,7 @@ OutputView=require './view/output-view'
 #FileView=require './tree-view/file-view'
 module.exports =
 class CacheStudioView extends View
+  @outputView:null
   @content: ->
     @div class: 'cache-studio overlay from-top', =>
       @div "The CacheStudio package is Alive! It's ALIVE!", class: "message"
@@ -19,6 +20,8 @@ class CacheStudioView extends View
     atom.workspaceView.command "cache-studio:compile", => @compile()
     atom.workspaceView.command "cache-studio:termilal", => @termilal()
     atom.workspaceView.command "cache-studio:output", => @output()
+    atom.workspaceView.command "output-view:clearoutput", => @clearoutput()
+    atom.workspaceView.command "output-view:closeoutput", => @closeoutput()
     #atom.workspaceView.command "tree-view:termilal", => @termilal()
     atom.workspaceView.command 'core:save', => @save()
 
@@ -60,7 +63,13 @@ class CacheStudioView extends View
       StudioAPI.UpdateClass.data.nameClass=@getProperties().name
       StudioAPI.UpdateClass.data.text=editor.getText()
       StudioAPI.updateclass (status) =>
-        console.log status
+        if @outputView instanceof OutputView
+          @outputView.save(status,@getProperties().file)
+        else
+          @outputView= new OutputView()
+          @outputView.show()
+          @outputView.save(status,status)
+
   saveall: ->
   compile: ->
     @save()
@@ -68,7 +77,12 @@ class CacheStudioView extends View
       StudioAPI.CompileClass.data.namespace=@getProperties().namespace
       StudioAPI.CompileClass.data.nameClass=@getProperties().name
       StudioAPI.compileclass (status) =>
-        console.log status
+        if @outputView instanceof OutputView
+          @outputView.compile(status)
+        else
+          @outputView= new OutputView()
+          @outputView.show()
+          @outputView.compile(status)
         @treeView.updateRoot()
   compileall: ->
   getProperties:  ->
@@ -94,5 +108,16 @@ class CacheStudioView extends View
     uri='cache-studio://terminal-view'
     atom.workspace.open(uri, split: 'left', searchAllPanes: false).done (terminalView) ->
   output: ->
-    @outputView= new OutputView()
-    @outputView.show(1,'w wrg wertgh wrtgh srtg werrtg \n sertgwsergwe gwerrtg\nersergwsertgwsertg')
+    if @outputView instanceof OutputView
+      @outputView.detach()
+      @outputView=null
+    else
+      @outputView= new OutputView()
+      @outputView.show()
+  clearoutput: ->
+    if @outputView instanceof OutputView
+      @outputView.clear()
+  closeoutput: ->
+    if @outputView instanceof OutputView
+      @outputView.detach()
+      @outputView=null

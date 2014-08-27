@@ -8,6 +8,9 @@
     'Add Folder': 'cache-studio:add-folder'
     'Delete'    : 'cache-studio:delete'
     'Refresh'   : 'cache-studio:refresh'
+  '.output-view.native-key-bindings':
+    'Clear'      : 'output-view:clearoutput'
+    'Close'      : 'output-view:closeoutput'
 
 
 

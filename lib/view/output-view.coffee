@@ -4,8 +4,9 @@ module.exports =
 class OutputView extends View
 
   @content: ->
-    @div class: 'project-runner native-key-bindings tool-panel panel-bottom', outlet: 'runner', tabindex: -1, =>
+    @div class: 'output-view native-key-bindings tool-panel panel-bottom', outlet: 'runner', tabindex: -1, =>
       @pre class: 'stacktrace', outlet: 'output'
+
 
   initialize: ->
 
@@ -18,28 +19,29 @@ class OutputView extends View
   show: (state, stacktrace='')->
     if not @hasParent()
       atom.workspaceView.prependToBottom(this)
-
     @refresh()
+  clear: ->
+    @output.html('')
+  save: (state, text) ->
+    #pre = document.createElement('pre')
+    #node = document.createTextNode(text)
+    #pre.appendChild(node)
+    state=parseInt(state)
+    @output.append(text)
 
-    # stacktrace
-    pre = document.createElement('pre')
-    node = document.createTextNode(stacktrace)
-    pre.appendChild(node)
 
-    #pre.innerHTML = new AnsiFilter().toHtml(pre.innerHTML)
-    @output.append(pre)
-
-    # result
-    status     = if state == true then '✓ succeeded' else '× failed'
-    className  = if state == true then 'stdout' else 'stderr'
+    status     = if state == 1 then '  ✓ saved \n' else '  × error saving \n'
+    className  = if state == 1 then 'stdout' else 'stderr'
 
     result = document.createElement('span')
     result.className = className
     node = document.createTextNode(status)
     result.appendChild(node)
-
-    pre.appendChild(result)
-  
+    #pre.appendChild(result)
+    @output.append(result)
+  compile: (text) ->
+    text=text+'\n'
+    @output.append(text)
 
   close: ->
     if @hasParent()
