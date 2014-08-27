@@ -11,8 +11,8 @@
   '.output-view.native-key-bindings':
     'Clear'      : 'output-view:clearoutput'
     'Close'      : 'output-view:closeoutput'
-
-
+  '.editor':
+    'Search': 'cache-studio:search'
 
 'menu': [
   {

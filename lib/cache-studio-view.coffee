@@ -1,9 +1,11 @@
-{View} = require 'atom'
+{View, Editor} = require 'atom'
+url = require 'url'
 StudioAPI= require 'StudioAPI'
 SelectNameSpaceView=require './view/select-namespace-view'
 Tree=require './tree-view/tree'
 TreeView=require './tree-view/tree-view'
 TerminalView=require './view/terminal-view'
+DocumaticView=require './view/documatic-view'
 OutputView=require './view/output-view'
 #File=require './tree-view/file'
 #FileView=require './tree-view/file-view'
@@ -22,7 +24,7 @@ class CacheStudioView extends View
     atom.workspaceView.command "cache-studio:output", => @output()
     atom.workspaceView.command "output-view:clearoutput", => @clearoutput()
     atom.workspaceView.command "output-view:closeoutput", => @closeoutput()
-    #atom.workspaceView.command "tree-view:termilal", => @termilal()
+    atom.workspaceView.command "cache-studio:search", => @searchdoc()
     atom.workspaceView.command 'core:save', => @save()
 
     @treeView =new TreeView()
@@ -30,8 +32,9 @@ class CacheStudioView extends View
     atom.workspace.registerOpener (uriToOpen) ->
       if 'cache-studio://terminal-view'==uriToOpen
         return new TerminalView()
-      #if 'cache-studio://output-view'==uriToOpen
-      #  return new OutputView({})
+      {protocol, host, pathname} = url.parse(uriToOpen)
+      if 'cache-studio-documatic:'==protocol
+        return new DocumaticView(uriToOpen)
 
   # Returns an object that can be retrieved when package is activated
   serialize: ->
@@ -106,7 +109,7 @@ class CacheStudioView extends View
     'type':type
   termilal: ->
     uri='cache-studio://terminal-view'
-    atom.workspace.open(uri, split: 'left', searchAllPanes: false).done (terminalView) ->
+    atom.workspace.open(uri, split: 'left', searchAllPanes: true).done (terminalView) ->
   output: ->
     if @outputView instanceof OutputView
       @outputView.detach()
@@ -121,3 +124,14 @@ class CacheStudioView extends View
     if @outputView instanceof OutputView
       @outputView.detach()
       @outputView=null
+  searchdoc: ->
+    editor=null
+    editor=atom.workspace.getActiveEditor()
+    if editor!=null
+      text= editor.getSelection().getText()
+      ns= @getProperties().namespace
+      uri="cache-studio-documatic://"+
+      "http://localhost:57772/csp/documatic/%25CSP.Documatic.cls?LIBRARY=#{ns}&CLASSNAME=#{text}"
+      atom.workspace.open(uri, split: 'left', searchAllPanes: false).done (documaticView) ->
+        #if documaticView instanceof DocumaticView
+          #documaticView.show(@getProperties().namespace,editor.getSelection().getText())
