@@ -1,12 +1,12 @@
 path = require 'path'
 fs = require 'fs-plus'
 Dialog = require './dialog'
-
+StudioAPI= require 'StudioAPI'
 module.exports =
 class AddDialog extends Dialog
   constructor: (initialPath, isCreatingFile) ->
     @isCreatingFile = isCreatingFile
-    console.log initialPath
+    #console.log initialPath
     if fs.isFileSync(initialPath)
       directoryPath = path.dirname(initialPath)
     else
@@ -32,6 +32,19 @@ class AddDialog extends Dialog
         if endsWithDirectorySeparator
           @showError("File names must not end with a '/' character.")
         else
+          temp=pathToCreate.split('.')
+          type=temp[(temp.length-1)]
+          if type=='cls'
+            str=pathToCreate.substr(0, (pathToCreate.indexOf('Classes')-1))
+            str=str.split('\\')
+            namespace=str[ (str.length-1) ]
+            file= pathToCreate.substr((pathToCreate.indexOf('Classes')+8), pathToCreate.length).replace('\\', '.')
+            classname=file.substr(0, (file.length-4)).replace('\\', '.').replace('\\', '.').replace('\\', '.').replace('\\', '.').replace('\\', '.')
+            StudioAPI.NewClass.data.namespace=namespace
+            StudioAPI.NewClass.data.nameClass=classname
+            StudioAPI.createclass (status) =>
+              #console.log status
+
           fs.writeFileSync(pathToCreate, '')
           atom.project.getRepo()?.getPathStatus(pathToCreate)
           @trigger 'file-created', [pathToCreate]

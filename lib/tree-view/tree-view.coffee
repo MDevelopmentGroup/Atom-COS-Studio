@@ -1,11 +1,12 @@
 path = require 'path'
 shell = require 'shell'
-
+StudioAPI= require 'StudioAPI'
 _ = require 'underscore-plus'
 {$, BufferedProcess, ScrollView} = require 'atom'
 fs = require 'fs-plus'
 
-AddDialog = null  # Defer requiring until actually needed
+AddDialog  = null  # Defer requiring until actually needed
+AddClass   = null
 MoveDialog = null # Defer requiring until actually needed
 CopyDialog = null # Defer requiring until actually needed
 
@@ -81,7 +82,11 @@ class TreeView extends ScrollView
     @command 'tool-panel:unfocus', => @unfocus()
     @command 'tree-view:toggleVcsIgnoredFiles', =>
       atom.config.toggle 'tree-view.hideVcsIgnoredFiles'
+
     atom.workspaceView.command 'cache-studio:add-file', => @add(true)
+    atom.workspaceView.command 'cache-studio:add-folder', => @add(false)
+    atom.workspaceView.command 'cache-studio:remove', => @removeSelectedEntries()
+
     @on 'tree-view:directory-modified', =>
       if @hasFocus()
         @selectEntryForPath(@selectedPath) if @selectedPath
@@ -426,8 +431,20 @@ class TreeView extends ScrollView
         buttons:
           "Move to Trash": ->
             for selectedPath in selectedPaths
+              temp=selectedPath.split('.')
+              type=temp[(temp.length-1)]
+              if type=='cls'
+                str=selectedPath.substr(0, (selectedPath.indexOf('Classes')-1))
+                str=str.split('\\')
+                namespace=str[ (str.length-1) ]
+                file= selectedPath.substr((selectedPath.indexOf('Classes')+8), selectedPath.length).replace('\\', '.')
+                classname=file.substr(0, (file.length-4)).replace('\\', '.').replace('\\', '.').replace('\\', '.').replace('\\', '.').replace('\\', '.')
+                StudioAPI.DeleteClass.data.namespace=namespace
+                StudioAPI.DeleteClass.data.nameClass=classname
+                StudioAPI.deleteclass (status) =>
               shell.moveItemToTrash(selectedPath)
           "Cancel": null
+
 
   # Public: Copy the path of the selected entry element.
   #         Save the path in localStorage, so that copying from 2 different
@@ -507,8 +524,8 @@ class TreeView extends ScrollView
     selectedEntry = @selectedEntry() or @root
     selectedPath = selectedEntry.getPath()
     AddDialog ?= require './add-dialog'
+    #AddClass ?= require './class/add-class'
     dialog = new AddDialog(selectedPath, isCreatingFile)
-    console.log dialog
     dialog.on 'directory-created', (event, createdPath) =>
       @entryForPath(createdPath).reload()
       @selectEntryForPath(createdPath)

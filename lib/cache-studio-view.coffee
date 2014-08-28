@@ -28,7 +28,7 @@ class CacheStudioView extends View
     atom.workspaceView.command 'core:save', => @save()
 
     @treeView =new TreeView()
-    Tree.activate({})
+    #Tree.activate({})
     atom.workspace.registerOpener (uriToOpen) ->
       if 'cache-studio://terminal-view'==uriToOpen
         return new TerminalView()
@@ -94,12 +94,13 @@ class CacheStudioView extends View
     folder=''
     editor=atom.workspace.getActiveEditor()
     path=editor.getPath()
-    file= path.substr((path.indexOf('Classes')+8), path.length).replace('\\', '.')
+    file= path.substr((path.indexOf('Classes')+8), path.length).replace('\\', '.').replace('\\', '.').replace('\\', '.')
+
     temp=path.substr(0, (path.indexOf('Classes')-1))
     temp=temp.split('\\')
     namespace=temp[ (temp.length-1) ]
-    type=file.substr((file.length-3), file.length)
-    name=file.substr(0, (file.length-4))
+    type=path.split('.')[(path.split('.').length-1)]
+    name=file.substr(0, (file.length-(type.length+1)))
 
     'namespace':namespace
     'folder':folder
