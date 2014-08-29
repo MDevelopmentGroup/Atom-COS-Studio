@@ -7,6 +7,7 @@ TreeView=require './tree-view/tree-view'
 TerminalView=require './view/terminal-view'
 DocumaticView=require './view/documatic-view'
 OutputView=require './view/output-view'
+BrowserWindow = require 'browser-window'
 #File=require './tree-view/file'
 #FileView=require './tree-view/file-view'
 module.exports =
