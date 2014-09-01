@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2014.2 (Build 315U)" ts="2014-08-26 18:37:29">
-<Project name="MDG-DEV" LastModified="2014-08-26 18:37:29.530715">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2014.2 (Build 315U)" ts="2014-09-01 23:02:11">
+<Project name="MDG-DEV" LastModified="2014-08-28 14:01:23.794007">
   <Items>
     <ProjectItem name="Includes.INC" type="MAC"></ProjectItem>
     <ProjectItem name="MDG.Request" type="CLS"></ProjectItem>
@@ -11,7 +11,7 @@
 
 <Class name="MDG.Request">
 <Super>%Persistent</Super>
-<TimeChanged>63425,66951</TimeChanged>
+<TimeChanged>63431,59189.44765</TimeChanged>
 <TimeCreated>63407,36185.325569</TimeCreated>
 
 <Parameter name="Path">
@@ -30,6 +30,8 @@
 <FormalSpec>broker</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
+ s File=##class(%File).%New()
+ s st=File.CreateDirectory("c:\temp"),st=File.%Save() 
  s ns = $namespace, $namespace="%SYS"
  set st=##class(Security.Applications).Get(broker,.CSP)
  if st '=1 {
@@ -71,18 +73,22 @@
 <ClassMethod>1</ClassMethod>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-	#dim tempDir=..#Path
+	//##dim tempDir=..#Path
 	#dim Path=""
 	$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
-	s Path=tempDir_obj.NameSpace
+
+	s Path=obj.TempDir_obj.NameSpace
 	s ProxyObject=##class(%ZEN.proxyObject).%New()
 	s ProxyObject.Path=Path
+	s ProxyObject.Dir=obj.TempDir
 	d ProxyObject.%ToJSON()
 	s %response.Status="200 OK"
 	s File=##class(%File).%New()
+	d File.CreateDirectory(obj.TempDir)
 	d File.CreateDirectory(Path)
 	do ..WriteClassFiles(obj.NameSpace,Path)
 	do ..WriteWebFiles(obj.NameSpace,Path)
+	do ..ROUTINE(obj.NameSpace,Path)
 	q $$$OK
 ]]></Implementation>
 </Method>
@@ -104,6 +110,29 @@
   	s st=File.CreateDirectory(Path)
   	s st=File.CopyDir($g(csp("Path")),Path,1)
   	Q st
+]]></Implementation>
+</Method>
+
+<Method name="WriteClassFile">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NS,Class,text</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	s Path=..#Path_NS_"/Classes"
+	s File=##class(%File).%New()		
+	s List=$LISTFROMSTRING(Class,".")
+	s tempPath=Path_"/"
+    for i=1:1:$LL(List)-1
+    {
+		s tempPath=tempPath_$LIST(List,i)_"/"
+	    d File.CreateDirectory(tempPath)
+	}
+	s file=##class(%Stream.FileBinary).%New()
+	s file.Filename=tempPath_$LIST(List,$LL(List))_".cls"
+	
+	s st=file.Write($ZCONVERT(text,"O","UTF8"))
+	s st=file.%Save()
+	q $$$OK
 ]]></Implementation>
 </Method>
 
@@ -133,7 +162,7 @@
 	    s tSC=##class(%Compiler.UDL.TextServices).GetTextAsStream(NS,rs.%Get("ID"),.tStream)
 	    s file=##class(%Stream.FileBinary).%New()
 		s file.Filename=tempPath_$LIST(List,$LL(List))_".cls"
-		s st=file.CopyFrom(tStream)
+		s st=file.Write($ZCONVERT(tStream.Read(tStream.Size),"O","UTF8"))
 		s st=file.%Save()
 		k file
 	}
@@ -214,8 +243,6 @@ Method returns the class text </Description>
 
     set st=##class(%Dictionary.ClassDefinition).%ExistsId(obj.nameClass)
     if ('st){
-
-
 	    set nc = ##class(%Dictionary.ClassDefinition).%New(obj.nameClass)
 	    set nc.Super = ""
     	set nc.Abstract = ""
@@ -248,7 +275,7 @@ Cоздание класса</Description>
           }
     */
     $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
-    zw obj
+    
     set sn = $namespace
     set $namespace = obj.namespace
     set o = ##class(%Dictionary.ClassDefinition).%New(obj.nameClass)
@@ -258,7 +285,22 @@ Cоздание класса</Description>
     set o.Abstract = obj.Abstract
     //ÐÐ¿Ð¸ÑÐ°Ð½Ð¸Ðµ
     set o.Description = obj.Description
-    set status = o.%Save() 
+    set status = o.%Save()
+    s tSC=##class(%Compiler.UDL.TextServices).GetTextAsStream(obj.namespace,obj.nameClass,.tStream)
+	s file=##class(%Stream.FileBinary).%New()
+	s Dir=##class(%File).%New()
+	s Path=..#Path_obj.namespace_"/Classes"
+	s tempPath=Path_"/"
+    s List=$LISTFROMSTRING(obj.nameClass,".")
+    for i=1:1:$LL(List)-1
+    {
+	    s tempPath=tempPath_$LIST(List,i)_"/"
+	    d Dir.CreateDirectory(tempPath)
+	}
+	s file.Filename=tempPath_$LIST(List,$LL(List))_".cls"
+	s st=file.Write($ZCONVERT(tStream.Read(tStream.Size),"O","UTF8"))
+	s st=file.%Save()
+	k file 
     set $namespace = sn
     q $$$OK
 ]]></Implementation>
@@ -292,6 +334,7 @@ Cоздание класса</Description>
       set $namespace = obj.namespace
       do ##class(%Studio.ClassMgr).Delete(obj.nameClass)
       set $namespace = sn
+      Q $$$OK
 ]]></Implementation>
 </Method>
 
@@ -352,11 +395,11 @@ Cоздание класса</Description>
       //do ##class(MDG.Request).GetParameters()
        // ÐÐ¾Ð»Ð»ÐµÐºÑÐ¸Ñ (array Ð¸Ð»Ð¸ list)
       set property.Collection = obj.Collection
-      //ÐÑÐ½Ð¾ÑÐµÐ½Ð¸Ðµ (0 Ð¸Ð»Ð¸ 1)
+      //Отношение
       set property.Relationship = obj.Relationship
       set property.Required = obj.Required
       set property.Calculated = obj.Calculated
-      //ÐÐ¾Ð±Ð°Ð²Ð»ÐµÐ½Ð¸Ðµ Ð¿Ð°ÑÐ°Ð¼ÐµÑÑÐ¾Ð²
+      //Запись параметров
       for i=1:1:obj.Parameter.Size{
 	      do property.Parameters.SetAt(obj.Parameter.GetAt(i).Data,obj.Parameter.GetAt(i).Name)
 	      }
@@ -388,6 +431,51 @@ Cоздание класса</Description>
 ]]></Implementation>
 </Method>
 
+<Method name="ROUTINE">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>namespace,Path</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+
+	#dim st As %Status=$$$OK
+  	s Path=Path_"/PROGRAMMS"
+  	s File=##class(%File).%New()
+	d File.CreateDirectory(Path)
+  	s routine=##class(%ResultSet).%New("%Library.Routine:RoutineList")
+  	s st=routine.Execute("",1,"INT",namespace)
+ 
+  	while routine.Next() {
+	  	s ns=$namespace
+	  	s $namespace=namespace
+		s temp=##class(%Routine).%OpenId(routine.Get("Name"))
+		s $namespace=ns	
+	  	s tempPath=Path_"/"
+    	s List=$LISTFROMSTRING(routine.Get("Name"),".")
+  
+    	for i=1:1:$LL(List)-3
+    	{
+	    	s tempPath=tempPath_$LIST(List,i)_"/"
+	    	d File.CreateDirectory(tempPath)
+	    }
+	    
+	    s file=##class(%Stream.FileBinary).%New()
+		s file.Filename=tempPath_$LIST(List,$LL(List)-2)_"."_$LIST(List,$LL(List)-1)_"."_$ZCVT($LIST(List,$LL(List)),"L")
+		//s TMP=##class(%Stream.TmpCharacter).%New()
+		//d TMP.CopyFrom(temp)
+		//w TMP.Read(TMP.Size)
+		//zw temp
+		s st=file.CopyFrom(temp)	//Write($ZCONVERT(TMP.Read(TMP.Size),"O","UTF8"))
+		//w temp.Read(100)
+		s st=file.%Save()
+
+		k file
+	   	
+	}
+  	
+	q st
+]]></Implementation>
+</Method>
+
 <Storage name="Default">
 <Type>%Library.CacheStorage</Type>
 <DataLocation>^MDG.RequestD</DataLocation>
@@ -406,8 +494,8 @@ Cоздание класса</Description>
 
 <Class name="WEB.Broker">
 <Super>%CSP.REST</Super>
-<TimeChanged>63425,37912.446358</TimeChanged>
-<TimeCreated>63407,31631.160956</TimeCreated>
+<TimeChanged>63431,55686.160825</TimeChanged>
+<TimeCreated>63431,55629.810634</TimeCreated>
 
 <XData name="UrlMap">
 <Data><![CDATA[
@@ -428,12 +516,5 @@ Cоздание класса</Description>
 </Routes>
 ]]></Data>
 </XData>
-
-<UDLText name="T">
-<Content><![CDATA[
-// Текст
-
-]]></Content>
-</UDLText>
 </Class>
 </Export>
