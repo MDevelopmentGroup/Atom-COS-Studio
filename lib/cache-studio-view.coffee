@@ -1,5 +1,6 @@
 {View, Editor} = require 'atom'
 url = require 'url'
+fs= require 'fsplus' # JSON fsplus
 StudioAPI= require 'StudioAPI'
 SelectNameSpaceView=require './view/select-namespace-view'
 Tree=require './tree-view/tree'
@@ -7,12 +8,12 @@ TreeView=require './tree-view/tree-view'
 TerminalView=require './view/terminal-view'
 DocumaticView=require './view/documatic-view'
 OutputView=require './view/output-view'
-BrowserWindow = require 'browser-window'
-#File=require './tree-view/file'
-#FileView=require './tree-view/file-view'
+#BrowserWindow = require 'browser-window'
+ConfigView=require './view/config-view'
 module.exports =
 class CacheStudioView extends View
   @outputView:null
+  @configView:null
   @content: ->
     @div class: 'cache-studio overlay from-top', =>
       @div "The CacheStudio package is Alive! It's ALIVE!", class: "message"
@@ -27,9 +28,9 @@ class CacheStudioView extends View
     atom.workspaceView.command "output-view:closeoutput", => @closeoutput()
     atom.workspaceView.command "cache-studio:search", => @searchdoc()
     atom.workspaceView.command 'core:save', => @save()
-
+    atom.workspaceView.command "cache-studio:config", => @config()
     @treeView =new TreeView()
-    #Tree.activate({})
+
     atom.workspace.registerOpener (uriToOpen) ->
       if 'cache-studio://terminal-view'==uriToOpen
         return new TerminalView()
@@ -50,9 +51,12 @@ class CacheStudioView extends View
     else
       atom.workspaceView.append(this)
   namespace: ->
+    configs = fs.readJSON(atom.packages.resolvePackagePath('cache-studio')+'/lib/configs.json');
+    StudioAPI.server=configs.UrlToConnect
     selectNameSpaceView=new SelectNameSpaceView()
     selectNameSpaceView.success (namespace) =>
       @NameSpace=namespace
+      StudioAPI.Obj.data.TempDir=configs.TempDir
       StudioAPI.Obj.data.NameSpace=namespace
       StudioAPI.getpath (fullpath) =>
         atom.project.setPath(fullpath.Path)
@@ -61,6 +65,8 @@ class CacheStudioView extends View
     selectNameSpaceView.cancel (call) =>
       selectNameSpaceView.detach()
   save: ->
+    configs = fs.readJSON(atom.packages.resolvePackagePath('cache-studio')+'/lib/configs.json');
+    StudioAPI.server=configs.UrlToConnect
     editor=atom.workspace.getActiveEditor()
     if @getProperties().type=='cls'
       StudioAPI.UpdateClass.data.namespace=@getProperties().namespace
@@ -76,6 +82,8 @@ class CacheStudioView extends View
 
   saveall: ->
   compile: ->
+    configs = fs.readJSON(atom.packages.resolvePackagePath('cache-studio')+'/lib/configs.json');
+    StudioAPI.server=configs.UrlToConnect
     @save()
     if @getProperties().type=='cls'
       StudioAPI.CompileClass.data.namespace=@getProperties().namespace
@@ -137,3 +145,14 @@ class CacheStudioView extends View
       atom.workspace.open(uri, split: 'left', searchAllPanes: false).done (documaticView) ->
         #if documaticView instanceof DocumaticView
           #documaticView.show(@getProperties().namespace,editor.getSelection().getText())
+
+  config: ->
+    if @configView instanceof ConfigView
+      @configView.toggle()
+      @configView.success (call) =>
+        @configView.detach()
+    else
+      @configView=new ConfigView()
+      @configView.toggle()
+      @configView.success (call) =>
+        @configView.detach()

@@ -17,6 +17,7 @@
     'submenu': [
       'label': 'cache-studio'
       'submenu': [
+        { 'label': 'Config', 'command': 'cache-studio:config' },
         { 'label': 'Namespace', 'command': 'cache-studio:namespace' },
         { 'label': 'Compile', 'command': 'cache-studio:compile' },
         { 'label': 'Termital', 'command': 'cache-studio:termilal' },
