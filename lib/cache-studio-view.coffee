@@ -23,7 +23,7 @@ class CacheStudioView extends View
     atom.workspaceView.command "cache-studio:toggle", => @toggle()
     atom.workspaceView.command "cache-studio:namespace", => @namespace()
     atom.workspaceView.command "cache-studio:compile", => @compile()
-    atom.workspaceView.command "cache-studio:terminal", => @termilal()
+    atom.workspaceView.command "cache-studio:terminal", => @terminal()
     atom.workspaceView.command "cache-studio:output", => @output()
     atom.workspaceView.command "output-view:clearoutput", => @clearoutput()
     atom.workspaceView.command "output-view:closeoutput", => @closeoutput()
@@ -122,9 +122,15 @@ class CacheStudioView extends View
     'path': path
     'file':file
     'type':type
-  termilal: ->
+  terminal: ->
     uri='cache-studio://terminal-view'
-    atom.workspace.open(uri, split: 'left', searchAllPanes: true).done (terminalView) ->
+    #uri='http://localhost:57772/csp/sys/webterminal/index.csp'
+    ###atom.workspace.open(uri, split: 'left', searchAllPanes: true).done (terminalView) ->
+    ###
+    BrowserWindow = require('remote').require 'browser-window'
+    mainWindow = new BrowserWindow({width: 800, height: 600, frame: true, 'skip-taskbar':true, 'auto-hide-menu-bar':true });
+    mainWindow.loadUrl('http://localhost:57772/csp/sys/webterminal/index.csp')
+    mainWindow.show()
   output: ->
     if @outputView instanceof OutputView
       @outputView.detach()

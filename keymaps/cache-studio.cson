@@ -8,5 +8,5 @@
 # For more detailed documentation see
 # https://atom.io/docs/latest/advanced/keymaps
 '.workspace':
-  'ctrl-alt-o': 'cache-studio:toggle'
+  'ctrl-alt-o': 'cache-studio:namespace'
   'F7': 'cache-studio:compile'
