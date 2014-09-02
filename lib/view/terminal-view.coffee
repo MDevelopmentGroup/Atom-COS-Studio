@@ -1,4 +1,7 @@
 {$, $$$, ScrollView} = require 'atom'
+##{BrowserWindow} = require 'atom-shell'
+#BrowserWindow =require 'remote'.require 'browser-window'
+
 module.exports =
 class TerminalView extends ScrollView
   @content: ->
@@ -9,7 +12,7 @@ class TerminalView extends ScrollView
 
   initialize: ->
     super
-
+    console.log '' #BrowserWindow
   destroy: ->
     @unsubscribe()
 

@@ -1,7 +1,7 @@
 {
   "name": "cache-studio",
   "main": "./lib/cache-studio",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "A short description of your package",
   "activationEvents": ["cache-studio:toggle", "cache-studio:namespace", "cache-studio:config"],
   "repository": "https://github.com/atom/cache-studio",

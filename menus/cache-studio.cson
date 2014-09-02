@@ -20,7 +20,7 @@
         { 'label': 'Config', 'command': 'cache-studio:config' },
         { 'label': 'Namespace', 'command': 'cache-studio:namespace' },
         { 'label': 'Compile', 'command': 'cache-studio:compile' },
-        { 'label': 'Termital', 'command': 'cache-studio:termilal' },
+        { 'label': 'Terminal', 'command': 'cache-studio:terminal' },
         { 'label': 'Output', 'command': 'cache-studio:output' }
       ]
     ]

@@ -1,4 +1,4 @@
-{View, Editor} = require 'atom'
+{View, Editor, $} = require 'atom'
 url = require 'url'
 fs= require 'fsplus' # JSON fsplus
 StudioAPI= require 'StudioAPI'
@@ -10,6 +10,7 @@ DocumaticView=require './view/documatic-view'
 OutputView=require './view/output-view'
 #BrowserWindow = require 'browser-window'
 ConfigView=require './view/config-view'
+ToolbarView=require './view/toolbar-view'
 module.exports =
 class CacheStudioView extends View
   @outputView:null
@@ -22,7 +23,7 @@ class CacheStudioView extends View
     atom.workspaceView.command "cache-studio:toggle", => @toggle()
     atom.workspaceView.command "cache-studio:namespace", => @namespace()
     atom.workspaceView.command "cache-studio:compile", => @compile()
-    atom.workspaceView.command "cache-studio:termilal", => @termilal()
+    atom.workspaceView.command "cache-studio:terminal", => @termilal()
     atom.workspaceView.command "cache-studio:output", => @output()
     atom.workspaceView.command "output-view:clearoutput", => @clearoutput()
     atom.workspaceView.command "output-view:closeoutput", => @closeoutput()
@@ -38,6 +39,8 @@ class CacheStudioView extends View
       if 'cache-studio-documatic:'==protocol
         return new DocumaticView(uriToOpen)
 
+    @toolbarView=new ToolbarView()
+
   # Returns an object that can be retrieved when package is activated
   serialize: ->
 
@@ -51,6 +54,8 @@ class CacheStudioView extends View
     else
       atom.workspaceView.append(this)
   namespace: ->
+
+
     configs = fs.readJSON(atom.packages.resolvePackagePath('cache-studio')+'/lib/configs.json');
     StudioAPI.server=configs.UrlToConnect
     selectNameSpaceView=new SelectNameSpaceView()
