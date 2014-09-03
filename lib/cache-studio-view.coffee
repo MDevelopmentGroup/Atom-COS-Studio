@@ -11,10 +11,14 @@ OutputView=require './view/output-view'
 #BrowserWindow = require 'browser-window'
 ConfigView=require './view/config-view'
 ToolbarView=require './view/toolbar-view'
+AddDialogView=require './add/add-dialog-view'
+AddClassView=require './add/add-class-view'
 module.exports =
 class CacheStudioView extends View
   @outputView:null
   @configView:null
+  @addDialogView:null
+  @addClassView:null
   @content: ->
     @div class: 'cache-studio overlay from-top', =>
       @div "The CacheStudio package is Alive! It's ALIVE!", class: "message"
@@ -30,6 +34,8 @@ class CacheStudioView extends View
     atom.workspaceView.command "cache-studio:search", => @searchdoc()
     atom.workspaceView.command 'core:save', => @save()
     atom.workspaceView.command "cache-studio:config", => @config()
+    atom.workspaceView.command "cache-studio:add-dialog", => @adddialog()
+    atom.workspaceView.command "cache-studio:create-class-cache", => @CreateClassCache()
     @treeView =new TreeView()
 
     atom.workspace.registerOpener (uriToOpen) ->
@@ -64,6 +70,9 @@ class CacheStudioView extends View
       StudioAPI.Obj.data.TempDir=configs.TempDir
       StudioAPI.Obj.data.NameSpace=namespace
       StudioAPI.getpath (fullpath) =>
+        fs.updateJSON(atom.packages.resolvePackagePath('cache-studio')+'/.config', {
+          TempDir: fullpath.Path
+        });
         atom.project.setPath(fullpath.Path)
         @treeView.toggle()
       selectNameSpaceView.detach()
@@ -167,3 +176,12 @@ class CacheStudioView extends View
       @configView.toggle()
       @configView.success (call) =>
         @configView.detach()
+  adddialog: ->
+    if @addDialogView instanceof AddDialogView
+      @addDialogView.toggle()
+    else
+      @addDialogView=new AddDialogView()
+      @addDialogView.toggle()
+  CreateClassCache: ->
+    #if @addClassView instanceof AddClassView
+    addClassView=new AddClassView()

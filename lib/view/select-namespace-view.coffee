@@ -2,7 +2,7 @@
 NameSpaceListView=require './namespace-list-view'
 #TreeView=require './tree-view'
 NameSpaceListView= new NameSpaceListView()
-
+fsjson= require 'fsplus' # JSON fsplus
 StudioAPI= require 'StudioAPI'
 module.exports =
 class SelectNameSpaceView extends View
@@ -43,6 +43,10 @@ class SelectNameSpaceView extends View
       #console. log NameSpaceListView.getSelectedItem()
   success: (call) ->
     @OKButton.on 'click', ->
+      fsjson.updateJSON(atom.packages.resolvePackagePath('cache-studio')+'/.config', {
+        NameSpace: NameSpaceListView.getSelectedItem()
+      });
+
       call(NameSpaceListView.getSelectedItem())
   cancel: (call) ->
     @CancelButton.on 'click', (e)->
