@@ -18,6 +18,8 @@ class ToolbarView extends View
             @li class:'fa fa-floppy-o fa-lg'
           @button outlet:'Compile', class:'inline-block btn', =>
             @li class:'fa fa-play fa-lg'
+          @button outlet:'AddDialog', class:'inline-block btn', =>
+            @li class:'fa fa-file-o fa-lg'
 
 
   initialize: ->
@@ -37,6 +39,7 @@ class ToolbarView extends View
     @NameSpace.setTooltip('Select NameSpace', {})
     @Terminal.setTooltip('Terminal', {})
     @OutPutView.setTooltip('OutPut', {})
+    @AddDialog.setTooltip('Create', {})
   # Button events
   bind: ->
     @Save.on 'click', ->
@@ -51,3 +54,5 @@ class ToolbarView extends View
       atom.workspaceView.trigger('cache-studio:terminal')
     @OutPutView.on 'click', ->
       atom.workspaceView.trigger('cache-studio:output')
+    @AddDialog.on 'click', ->
+      atom.workspaceView.trigger('cache-studio:add-dialog')
