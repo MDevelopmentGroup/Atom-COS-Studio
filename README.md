@@ -1,21 +1,46 @@
-Сборка для студии
+Atom - studio 0.1.1  package
 ==============
-# cache-studio package
+**[english]** | **[russian]**
+# Before you start.
+* Download and install:
+* latest release of Atom from [https://github.com/atom/atom/releases](https://github.com/atom/atom/releases)
+* Web Terminal for better expirience [https://github.com/intersystems-ru/webterminal](https://github.com/intersystems-ru/webterminal) project [page](http://intersystems-ru.github.io/webterminal)
+* import **for_atom.xml** or **for_atom_mklink.xml** (experimental, for Windows only) in *NameSpaceForAtomStudio*
+* run in Cache terminal or Web Terminal this commands
+```
+zn "NameSpaceForAtomStudio"
+do ##class(MDG.Request).CreateBroker("/mdg-dev")
+```
+  * it will be create web app for WEB.Broker and temporary directory *c:\temp* (you can change it later in Atom-stuio interface)
+* clone this repo in *c:\users\%username%\.atom\packages*
+## in Atom
+* run Atom
+  * in top menu **packages\cache-studio**, chose **NameSpace** or press **ctrl-alt-o**
+  * select Namespace to work
+  * wait until Atom studio load all classes and files storied in seclected Namespace
+* after load
+  * you will see tree with classes, routines, web part for default web app and toolbar with available functions (except mouse right clicks for documatic)
+  * you can open Web Terminal in separate window (if installed)
 
-A short description of your package.
+##  Attention for current version
+* only for local projects on Windows platform
+*
 
-![A screenshot of your spankin' package](https://f.cloud.github.com/assets/69169/2290250/c35d867a-a017-11e3-86be-cd7c5bf3ff9b.gif)
+## Hot keys
+* ctrl-alt-o select NameSpace
+* F7 compile current tab
 
-* Скачайте последний Атом https://github.com/atom/atom/releases
+
+# Русский | Russian [](#rulink)
+* Скачайте последний Атом https://github.com/atom/atom/releases для Вашей операционной системы
 * Для запуска студии в Атоме предварительно экспортируйте for_atom.xml в произвольную область Cache и скомпилируйте
 * В терминале выполните do ##class(MDG.Request).CreateBroker("/mdg-dev") или самостоятельно создайте брокер /mdg-dev
   * будет создан брокер и временная папка c:\temp где будут храниться проекты
 * клонируйте репозиторий в каталог c:\users\%username%\.atom\packages
-* запустите atom
-  * Внимание !!! Кириллица может быть повреждена
+* запустите Atom
   * в появившемся пункте меню packages\cache-studio выберите NameSpace
   * укажите область которую планируете открыть
-  * произайдёт загрузка файлов в каталог, это займёт время
+  * произойдёт загрузка файлов в каталог, это займёт время
   * по окончании загрузки будет доступно дерево с двумя разделами
     * classes для классов
     * web для веб части
@@ -29,6 +54,7 @@ A short description of your package.
 * изменения сделанные в студии Cache не отслеживаются (Cache работает быстрее Атома и происходит рассинхронизация)
 * проблема Атома при работе с кирилицей (При загрузке классов в файловую систему)
 * Web Terminal необходимо настроить для работы со студией Атома (Предположительно Allow Orign)
+* Atom, на текущий момент, поддерживает только UTF-8
 ## Горячие клавиши
 * ctrl-alt-o выбрать NameSpace
 * F7 компиляция текущей вкладки
