@@ -3,21 +3,21 @@ Atom - studio 0.1.1  package
 **[english]** | **[russian]**
 # Before you start.
 * Download and install:
-* latest release of Atom from [https://github.com/atom/atom/releases](https://github.com/atom/atom/releases)
-* Web Terminal for better expirience [https://github.com/intersystems-ru/webterminal](https://github.com/intersystems-ru/webterminal) project [page](http://intersystems-ru.github.io/webterminal)
+* latest Atom release from [https://github.com/atom/atom/releases](https://github.com/atom/atom/releases)
+* Web Terminal for better experience [https://github.com/intersystems-ru/webterminal](https://github.com/intersystems-ru/webterminal) project [page](http://intersystems-ru.github.io/webterminal)
 * import **for_atom.xml** or **for_atom_mklink.xml** (experimental, for Windows only) in *NameSpaceForAtomStudio*
 * run in Cache terminal or Web Terminal this commands
 ```
 zn "NameSpaceForAtomStudio"
 do ##class(MDG.Request).CreateBroker("/mdg-dev")
 ```
-  * it will be create web app for WEB.Broker and temporary directory *c:\temp* (you can change it later in Atom-stuio interface)
+  * it will create web app for WEB.Broker and temporary directory *c:\temp* (you can change it later in Atom-stuio interface)
 * clone this repo in *c:\users\%username%\.atom\packages*
 ## in Atom
 * run Atom
-  * in top menu **packages\cache-studio**, chose **NameSpace** or press **ctrl-alt-o**
+  * in top menu **packages\cache-studio**, choose **NameSpace** or press **ctrl-alt-o**
   * select Namespace to work
-  * wait until Atom studio load all classes and files storied in seclected Namespace
+  * wait until Atom studio loads all classes and files stored in selected Namespace
 * after load
   * you will see tree with classes, routines, web part for default web app and toolbar with available functions (except mouse right clicks for documatic)
   * you can open Web Terminal in separate window (if installed)
