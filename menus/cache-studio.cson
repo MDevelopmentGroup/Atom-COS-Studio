@@ -20,6 +20,7 @@
         { 'label': 'Config', 'command': 'cache-studio:config' },
         { 'label': 'Namespace', 'command': 'cache-studio:namespace' },
         { 'label': 'Compile', 'command': 'cache-studio:compile' },
+        { 'label': 'Compile All', 'command': 'cache-studio:compile-all' },
         { 'label': 'Terminal', 'command': 'cache-studio:terminal' },
         { 'label': 'Output', 'command': 'cache-studio:output' },
         { 'label': 'Refresh', 'command': 'cache-studio:tree-view-refresh' }

@@ -34,6 +34,8 @@ class CacheStudioView extends View
     atom.workspaceView.command "output-view:closeoutput", => @closeoutput()
     atom.workspaceView.command "cache-studio:search", => @searchdoc()
     atom.workspaceView.command 'core:save', => @save()
+    atom.workspaceView.command 'window:save-all', => @saveall()
+    atom.workspaceView.command 'cache-studio:compile-all', => @compileall()
     atom.workspaceView.command "cache-studio:config", => @config()
     atom.workspaceView.command "cache-studio:add-dialog", => @adddialog()
     atom.workspaceView.command "cache-studio:create-class-cache", => @CreateClassCache()
@@ -100,7 +102,6 @@ class CacheStudioView extends View
           @outputView.show()
           @outputView.save(status,status)
 
-  saveall: ->
   compile: ->
 
     StudioAPI.server=@Config.UrlToConnect
@@ -116,7 +117,7 @@ class CacheStudioView extends View
           @outputView.show()
           @outputView.compile(status)
         @treeView.updateRoot()
-  compileall: ->
+
   getProperties:  ->
     name = ''
     namespace=''
@@ -196,3 +197,35 @@ class CacheStudioView extends View
     StudioAPI.Obj.data.NameSpace=@Config.NameSpace
     StudioAPI.Obj.data.Path=@Config.CurrentDir
     StudioAPI.refresh (data) =>
+  saveall: ->
+    StudioAPI.server=@Config.UrlToConnect
+    StudioAPI.Obj.data.NameSpace=@Config.NameSpace
+    StudioAPI.Obj.data.CurrentDir=@Config.CurrentDir
+    StudioAPI.saveall (data) =>
+      if @outputView instanceof OutputView
+        @outputView.save(data.status,data.status, "All Classes")
+      else
+        @outputView= new OutputView()
+        @outputView.show()
+        @outputView.save(data.status,data.status,"All Classes")
+  compileall: ->
+    StudioAPI.server=@Config.UrlToConnect
+    StudioAPI.Obj.data.NameSpace=@Config.NameSpace
+    StudioAPI.Obj.data.CurrentDir=@Config.CurrentDir
+    StudioAPI.saveall (data) =>
+      if @outputView instanceof OutputView
+        @outputView.save(data.status,data.status, "All Classes")
+      else
+        @outputView= new OutputView()
+        @outputView.show()
+        @outputView.save(data.status,data.status,"All Classes")
+      StudioAPI.server=@Config.UrlToConnect
+      StudioAPI.Obj.data.NameSpace=@Config.NameSpace
+      StudioAPI.Obj.data.CurrentDir=@Config.CurrentDir
+      StudioAPI.compileall (status) =>
+        if @outputView instanceof OutputView
+          @outputView.compile(status)
+        else
+          @outputView= new OutputView()
+          @outputView.show()
+          @outputView.compile(status)
