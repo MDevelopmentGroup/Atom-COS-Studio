@@ -11,3 +11,5 @@
   'ctrl-alt-o': 'cache-studio:namespace'
   'F7': 'cache-studio:compile'
   'ctrl-alt-0': 'cache-studio:tree-view-refresh'
+  'ctrl-alt-a':'window:save-all'
+  'F8': 'cache-studio:compile-all'
