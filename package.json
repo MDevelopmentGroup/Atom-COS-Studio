@@ -15,7 +15,7 @@
      "fs-plus" : ">= 2.2.6",
      "theorist" : ">= 1.0.2",
      "underscore-plus" : ">= 1.5.1",
-     "language-cos" : "https://github.com/UGroup/atom-language-cos.git",
-     "StudioAPI" : "*",
+     "language-cos" : "git+https://github.com/UGroup/atom-language-cos.git",
+     "StudioAPI" : "*"
   }
 }
