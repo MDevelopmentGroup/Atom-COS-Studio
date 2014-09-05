@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2014.2 (Build 315U)" ts="2014-09-03 18:33:42">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2014.2 (Build 315U)" ts="2014-09-05 17:00:17">
+<Project name="MDG-DEV" LastModified="2014-08-28 14:01:23.794007">
+  <Items>
+    <ProjectItem name="Includes.INC" type="MAC"></ProjectItem>
+    <ProjectItem name="MDG.Request" type="CLS"></ProjectItem>
+    <ProjectItem name="WEB.Broker" type="CLS"></ProjectItem>
+  </Items>
+</Project>
+
+
 <Class name="MDG.Request">
-<IncludeCode>%sySite</IncludeCode>
+<IncludeCode>%sySystem</IncludeCode>
 <Super>%Persistent</Super>
-<TimeChanged>63433,66346.775904</TimeChanged>
+<TimeChanged>63435,60849.388201</TimeChanged>
 <TimeCreated>63407,36185.325569</TimeCreated>
 
 <Parameter name="Path">
@@ -14,17 +23,18 @@ FIXME - Windows specific</Description>
 
 <Method name="CreateBroker">
 <Description>
-create broker app in the current namespace for this project</Description>
+create broker in the current namespace</Description>
 <ClassMethod>1</ClassMethod>
 <FormalSpec>broker</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
     set File=##class(%File).%New()
+    //set st=File.CreateDirectory("c:\temp"),st=File.%Save()
     set ns = $namespace, $namespace="%SYS"
     set status=##class(Security.Applications).Get(broker,.CSP)
     if status '=1 {
         write !,"Broker "_broker_" created for the namespace "_ns
-        set cspProperties("AutheEnabled") = 64 // allow access for unknown users
+        set cspProperties("AutheEnabled") = 64
         set cspProperties("NameSpace") = ns
         set cspProperties("DispatchClass") = "WEB.Broker"
         set cspProperties("IsNameSpaceDefault") = 0
@@ -39,15 +49,15 @@ create broker app in the current namespace for this project</Description>
 
 <Method name="GetNamespaces">
 <Description>
-Get the list of namespaces</Description>
+Получение областей</Description>
 <ClassMethod>1</ClassMethod>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
     #dim tSC As %Status = $$$OK
     #dim tNS As %String
-    
     set str=""
     write "["
+    //Get the list of namespaces
     do List^%SYS.NAMESPACE(.tList)
     set tNS=""
     for  {
@@ -57,7 +67,6 @@ Get the list of namespaces</Description>
     }
     write $Extract(str,1,*-1)
     write "]"
-    
     quit tSC
 ]]></Implementation>
 </Method>
@@ -83,27 +92,27 @@ Get the list of namespaces</Description>
     set linkPath = ..GetAppPath(defapp)
     /*
     FIXME- currently works only for the local project under Windows!
-    TODO - test in *nix enironment
     */
     if $$$ISWINDOWS {
         set mklPath = $Replace(Path,"/","\")
+        //w !,"lp - "_linkPath
         do $zf(-1,"mklink /J "_mklPath_"\WebApps "_linkPath)
+        //w !,"mklink /J "_mklPath_"/WebApps "_linkPath
+        //do ..WriteWebFiles(obj.NameSpace,Path)
     } else {
-        /// FIXME - TODO for *nux local projects
-        do ..WriteWebFiles(obj.NameSpace,Path)
+        /// FIXME - TODO
     }
-    do ..GetRoutineList(obj.NameSpace,Path)
+    do ..ROUTINE(obj.NameSpace,Path)
 
     quit $$$OK
 ]]></Implementation>
 </Method>
 
 <Method name="GetAppPath">
-<Description>
-Return local path of web app</Description>
 <ClassMethod>1</ClassMethod>
 <FormalSpec>cspapp</FormalSpec>
 <Implementation><![CDATA[
+
     set ns = $namespace 
     set $namespace="%SYS"
     kill csp 
@@ -115,8 +124,6 @@ Return local path of web app</Description>
 </Method>
 
 <Method name="WriteWebFiles">
-<Description>
-FIXME only for local istances </Description>
 <ClassMethod>1</ClassMethod>
 <FormalSpec>NS,Path</FormalSpec>
 <ReturnType>%Status</ReturnType>
@@ -124,13 +131,12 @@ FIXME only for local istances </Description>
     set Path=Path_"/Web"
     #dim st As %Status=$$$OK
 
-    // get default web app for namespace NS
+    // получаем веь приложение по умолчанию для области NS
     set defapp = $System.CSP.GetDefaultApp(NS)
     set ns = $namespace, $namespace="%SYS"
     kill csp
     set csp = ##class(Security.Applications).Get(defapp,.csp)
     set $namespace=ns
-    // create directory on local storage
     set File=##class(%File).%New()
     set status=File.CreateDirectory(Path)
     set Path=Path_defapp
@@ -142,8 +148,6 @@ FIXME only for local istances </Description>
 </Method>
 
 <Method name="WriteClassFile">
-<Description>
-create single file on local storage from class in "/Classes" directory</Description>
 <ClassMethod>1</ClassMethod>
 <FormalSpec>NS,Class,text</FormalSpec>
 <ReturnType>%Status</ReturnType>
@@ -166,8 +170,6 @@ create single file on local storage from class in "/Classes" directory</Descript
 </Method>
 
 <Method name="WriteClassFiles">
-<Description>
-Generate directory tree from classes in project</Description>
 <ClassMethod>1</ClassMethod>
 <FormalSpec>NS,Path</FormalSpec>
 <ReturnType>%Status</ReturnType>
@@ -262,7 +264,7 @@ Method returns the class text</Description>
 <ClassMethod>1</ClassMethod>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-    /* input data example
+    /* Пример приходящих данных
     data: { namespace: "MDG-DEV",
           text: "Class Example.Studio Extends (%Persistent,%Populate)'+'\r\n{'+'\r\n//hgjgjgjgh'+'\r\n}",
           nameClass: "Example.Studio"
@@ -295,7 +297,7 @@ Cоздание класса</Description>
 <ClassMethod>1</ClassMethod>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-    /* input data example
+    /* Пример приходящих данных
     data: { namespace: "MDG-DEV",
           nameClass: "Example.Studio",
           Super: "%Persistent,%Populate",
@@ -311,24 +313,23 @@ Cоздание класса</Description>
     set o.Abstract = obj.Abstract
     set o.Description = obj.Description
     set status = o.%Save()
-    write status 
+    w status
     if status {
-        
-        set tSC=##class(%Compiler.UDL.TextServices).GetTextAsStream(obj.namespace,obj.nameClass,.tStream)
-        set file=##class(%Stream.FileBinary).%New()
-        set Dir=##class(%File).%New()
-        set Path=..#Path_obj.namespace_"/Classes"
-        set tempPath=Path_"/"
+    set tSC=##class(%Compiler.UDL.TextServices).GetTextAsStream(obj.namespace,obj.nameClass,.tStream)
+    set file=##class(%Stream.FileBinary).%New()
+    set Dir=##class(%File).%New()
+    set Path=..#Path_obj.namespace_"/Classes"
+    set tempPath=Path_"/"
 
-        set List=$ListFromString(obj.nameClass,".")
-        for i=1:1:$ListLength(List)-1 {
-            set tempPath=tempPath_$List(List,i)_"/"
-            do Dir.CreateDirectory(tempPath)
-        }
-        set file.Filename=tempPath_$List(List,$ListLength(List))_".cls"
-        set status=file.Write($ZConvert(tStream.Read(tStream.Size),"O","UTF8"))
-        set status=file.%Save()
-        kill file
+    set List=$ListFromString(obj.nameClass,".")
+    for i=1:1:$ListLength(List)-1 {
+        set tempPath=tempPath_$List(List,i)_"/"
+        do Dir.CreateDirectory(tempPath)
+    }
+    set file.Filename=tempPath_$List(List,$ListLength(List))_".cls"
+    set status=file.Write($ZConvert(tStream.Read(tStream.Size),"O","UTF8"))
+    set status=file.%Save()
+    kill file
     }
     set $namespace = sn
 
@@ -374,7 +375,7 @@ Cоздание класса</Description>
 <ClassMethod>1</ClassMethod>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-    /* input data example
+    /* Пример приходящих данных
     data: { namespace: "MDG-DEV",
       nameClass: "Example.Studio",
       ClassMethod: "1",
@@ -405,7 +406,7 @@ Cоздание класса</Description>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
 
-    /* input data example
+    /* Пример приходящих данных
     data: { namespace: "MDG-DEV",
       nameClass: "Example.Studio",
       nameProperty: "test123",
@@ -439,17 +440,19 @@ Cоздание класса</Description>
 </Method>
 
 <Method name="GetParameters">
+<Description>
+Получение параметров</Description>
 <ClassMethod>1</ClassMethod>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
     $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
-    set query = "%"_obj.Parameters
-    set result=##class(%Library.ResultSet).%New("%Dictionary.ParameterDefinitionQuery:Summary")
-    do result.Execute(query)
+    set qqq = "%"_obj.Parameters
+    set s=##class(%Library.ResultSet).%New("%Dictionary.ParameterDefinitionQuery:Summary")
+    do s.Execute(qqq)
     set str = ""
     write "["
-    while result.Next() {
-        set str = str_ "{""Name"":"""_result.Get("Name")_"""},"
+    while s.Next() {
+        set str = str_ "{""Name"":"""_s.Get("Name")_"""},"
     }
     write $Extract(str,1,*-1)
     write "]"
@@ -458,7 +461,7 @@ Cоздание класса</Description>
 ]]></Implementation>
 </Method>
 
-<Method name="GetRoutineList">
+<Method name="ROUTINE">
 <ClassMethod>1</ClassMethod>
 <FormalSpec>namespace,Path</FormalSpec>
 <ReturnType>%Status</ReturnType>
@@ -492,6 +495,114 @@ Cоздание класса</Description>
 ]]></Implementation>
 </Method>
 
+<Method name="Refresh">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+	set File=##class(%File).%New()
+	set st= File.RemoveDirectoryTree("C:\temp\ILDARSHOW\Classes")
+	set st= File.RemoveDirectoryTree("C:\temp\ILDARSHOW\PROGRAMMS")
+	do ..WriteClassFiles(obj.NameSpace,obj.Path)
+	do ..ROUTINE(obj.NameSpace,obj.Path)
+	w "{""status"":"_st_"}"
+	quit 1
+]]></Implementation>
+</Method>
+
+<Method name="CompileAll">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set status=$$$OK
+	$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+	set List=##class(%Library.ListOfDataTypes).%New()	
+	s Dir=obj.CurrentDir_"/Classes"
+	
+	d ..FileList(Dir,List)
+	For i=1:1:List.Size{
+		set item=List.GetAt(i) 
+		if $E(item,$LENGTH(item)-3,*)=".cls"{
+			set classname=$E($REPLACE($E(item,$LENGTH(Dir)+2,*),"\","."),0,*-4)
+			    set sn = $namespace
+    			set $namespace = obj.NameSpace
+    			set status=$system.OBJ.Compile(classname)
+
+    			set $namespace = sn		
+		}
+	}
+	do ..ROUTINE(obj.NameSpace,obj.CurrentDir)
+	quit $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="SaveAll">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set status=$$$OK
+	$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+	set List=##class(%Library.ListOfDataTypes).%New()	
+	s Dir=obj.CurrentDir_"/Classes"
+	
+	d ..FileList(Dir,List)
+	For i=1:1:List.Size{
+		set item=List.GetAt(i) 
+		if $E(item,$LENGTH(item)-3,*)=".cls"{
+			set classname=$E($REPLACE($E(item,$LENGTH(Dir)+2,*),"\","."),0,*-4)
+			set sn = $namespace
+    		set $namespace = obj.NameSpace
+			set st=##class(%Dictionary.ClassDefinition).%ExistsId(classname)
+			set $namespace=sn
+			if (st)
+			{	
+				set sn = $namespace
+    			set $namespace = obj.NameSpace
+				set stream=##class(%Stream.FileBinary).%New()
+				set stream.Filename=item
+    			set status= ##class(%Compiler.UDL.TextServices).SetTextFromStream(obj.NameSpace, classname, stream)
+    			set $namespace=sn
+			}
+			else
+			{
+				set sn = $namespace
+    			set $namespace = obj.NameSpace
+    			set class = ##class(%Dictionary.ClassDefinition).%New(classname)
+    			set class.Super = ""
+    			set class.Abstract = ""
+    			set class.Description = ""
+    			set status = class.%Save()
+    			if status {
+	    			set stream=##class(%Stream.FileBinary).%New()
+					set stream.Filename=item
+    				set status= ##class(%Compiler.UDL.TextServices).SetTextFromStream(obj.NameSpace, classname, stream)	
+	    		}
+    			set $namespace=sn	
+			}		
+		}
+	}
+	w "{""status"":"_status_"}"
+	Quit $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="FileList">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[Dir,&list:%ListOfDataTypes]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	s result=##class(%ResultSet).%New("%Library.File:FileSet")
+	d result.Execute(Dir)
+	while result.Next() 
+	{
+		if result.Get("Type")="F"{do list.Insert(result.Get("Name"))}
+		else{do ..FileList(result.Get("Name"),list)}		
+	}		
+	quit $$$OK
+]]></Implementation>
+</Method>
+
 <Storage name="Default">
 <Type>%Library.CacheStorage</Type>
 <DataLocation>^MDG.RequestD</DataLocation>
@@ -510,7 +621,7 @@ Cоздание класса</Description>
 
 <Class name="WEB.Broker">
 <Super>%CSP.REST</Super>
-<TimeChanged>63431,55686.160825</TimeChanged>
+<TimeChanged>63435,59434.761824</TimeChanged>
 <TimeCreated>63431,55629.810634</TimeCreated>
 
 <XData name="UrlMap">
@@ -528,17 +639,12 @@ Cоздание класса</Description>
     <Route Url="/createproperty" Method="POST" Call="MDG.Request:CreateProperty" />
     <Route Url="/getparameter" Method="POST" Call="MDG.Request:GetParameters"/>
     <Route Url="/getpath" Method="POST" Call="MDG.Request:GetPath"/>
+    <Route Url="/refresh" Method="POST" Call="MDG.Request:Refresh"/>
+    <Route Url="/saveall" Method="POST" Call="MDG.Request:SaveAll"/>
+    <Route Url="/compileall" Method="POST" Call="MDG.Request:CompileAll"/>
     
 </Routes>
 ]]></Data>
 </XData>
 </Class>
-
-
-<Project name="for-atom" LastModified="2014-09-03 15:43:29.984796">
-  <Items>
-    <ProjectItem name="MDG.Request" type="CLS"></ProjectItem>
-    <ProjectItem name="WEB.Broker" type="CLS"></ProjectItem>
-  </Items>
-</Project>
 </Export>
