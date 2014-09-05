@@ -15,12 +15,12 @@ class AddDialogView extends View
             @button "OK", outlet:'OKButton', class:'btn'
             @button "Cancel", outlet:'CancelButton', class:'btn'
 
-  initialize:  ->
+  initialize: ->
     if @hasParent()
       @detach()
     else
       atom.workspaceView.append(this)
-    listView.setItems([{name:'Class Cache\'', icon:'fa-ils',trigger:'create-class-cache'}])
+    listView.setItems([{name:'Class Cache\'', icon:'fa-file-text-o',trigger:'create-class-cache'}])
     @List.html(listView)
     @bind(this)
   serialize: ->

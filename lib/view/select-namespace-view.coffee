@@ -2,10 +2,11 @@
 NameSpaceListView=require './namespace-list-view'
 #TreeView=require './tree-view'
 NameSpaceListView= new NameSpaceListView()
-fsjson= require 'fsplus' # JSON fsplus
+fs= require 'fsplus' # JSON fsplus
 StudioAPI= require 'StudioAPI'
 module.exports =
 class SelectNameSpaceView extends View
+  @Config:null
   @content: ->
       @div class: 'cache-modal-dialog overlay from-top', =>
         @div class: "panel", =>
@@ -18,7 +19,7 @@ class SelectNameSpaceView extends View
             @button "OK", outlet:'OKButton', class:'btn'
             @button "Cancel", outlet:'CancelButton', class:'btn'
   initialize:  ->
-
+    @Config=fs.readJSON(atom.packages.resolvePackagePath('cache-studio')+'/.config');
     @bind()
     if @hasParent()
       @detach()
@@ -43,7 +44,7 @@ class SelectNameSpaceView extends View
       #console. log NameSpaceListView.getSelectedItem()
   success: (call) ->
     @OKButton.on 'click', ->
-      fsjson.updateJSON(atom.packages.resolvePackagePath('cache-studio')+'/.config', {
+      fs.updateJSON(atom.packages.resolvePackagePath('cache-studio')+'/.config', {
         NameSpace: NameSpaceListView.getSelectedItem()
       });
 

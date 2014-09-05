@@ -10,3 +10,4 @@
 '.workspace':
   'ctrl-alt-o': 'cache-studio:namespace'
   'F7': 'cache-studio:compile'
+  'ctrl-alt-0': 'cache-studio:tree-view-refresh'

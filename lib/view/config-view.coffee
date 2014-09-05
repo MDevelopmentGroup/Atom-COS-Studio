@@ -4,6 +4,7 @@ StudioAPI= require 'StudioAPI'
 fs= require 'fsplus'
 module.exports =
 class ConfigView extends View
+  @Config:null
   @content: ->
       @div class: 'cache-modal-dialog overlay from-top', =>
         @div class: "panel", =>
@@ -19,10 +20,10 @@ class ConfigView extends View
             @button "Cancel", outlet:'CancelButton', class:'btn'
   initialize:  ->
 
+    @Config=fs.readJSON(atom.packages.resolvePackagePath('cache-studio')+'/.config');
 
-    @configs = fs.readJSON(atom.packages.resolvePackagePath('cache-studio')+'/lib/configs.json');
-    @UrlToConnect.getEditor().setText(@configs.UrlToConnect)
-    @TempDir.getEditor().setText(@configs.TempDir)
+    @UrlToConnect.getEditor().setText(@Config.UrlToConnect)
+    @TempDir.getEditor().setText(@Config.TempDir)
     p =
       'UrlToConnect':@UrlToConnect
       'TempDir':@TempDir
@@ -38,10 +39,10 @@ class ConfigView extends View
   # Buttons events
   bind: (p) ->
     @OKButton.on 'click', ->
-      configs = fs.readJSON(atom.packages.resolvePackagePath('cache-studio')+'/lib/configs.json');
-      configs.UrlToConnect = p.UrlToConnect.getEditor().getText()
-      configs.TempDir = p.TempDir.getEditor().getText()
-      fs.writeJSON(atom.packages.resolvePackagePath('cache-studio')+'/lib/configs.json', configs);
+      fs.updateJSON(atom.packages.resolvePackagePath('cache-studio')+'/.config', {
+        UrlToConnect:p.UrlToConnect.getEditor().getText(),
+        TempDir:p.TempDir.getEditor().getText()
+      });
   success: (call) ->
     @OKButton.on 'click', (e)->
       call(e)

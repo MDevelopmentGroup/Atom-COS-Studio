@@ -1,5 +1,6 @@
 {View, Editor, $} = require 'atom'
 url = require 'url'
+path=require 'path'
 fs= require 'fsplus' # JSON fsplus
 StudioAPI= require 'StudioAPI'
 SelectNameSpaceView=require './view/select-namespace-view'
@@ -8,7 +9,6 @@ TreeView=require './tree-view/tree-view'
 TerminalView=require './view/terminal-view'
 DocumaticView=require './view/documatic-view'
 OutputView=require './view/output-view'
-#BrowserWindow = require 'browser-window'
 ConfigView=require './view/config-view'
 ToolbarView=require './view/toolbar-view'
 AddDialogView=require './add/add-dialog-view'
@@ -19,6 +19,7 @@ class CacheStudioView extends View
   @configView:null
   @addDialogView:null
   @addClassView:null
+  @Config:null
   @content: ->
     @div class: 'cache-studio overlay from-top', =>
       @div "The CacheStudio package is Alive! It's ALIVE!", class: "message"
@@ -36,9 +37,13 @@ class CacheStudioView extends View
     atom.workspaceView.command "cache-studio:config", => @config()
     atom.workspaceView.command "cache-studio:add-dialog", => @adddialog()
     atom.workspaceView.command "cache-studio:create-class-cache", => @CreateClassCache()
+    atom.workspaceView.command "cache-studio:tree-view-refresh", => @TreeViewRefresh()
+
+    #atom.workspaceView.command "application:open-folder", => @test()
     @treeView =new TreeView()
 
     atom.workspace.registerOpener (uriToOpen) ->
+      #console.log path.extname(uriToOpen)
       if 'cache-studio://terminal-view'==uriToOpen
         return new TerminalView()
       {protocol, host, pathname} = url.parse(uriToOpen)
@@ -46,8 +51,9 @@ class CacheStudioView extends View
         return new DocumaticView(uriToOpen)
 
     @toolbarView=new ToolbarView()
+    @Config=fs.readJSON(atom.packages.resolvePackagePath('cache-studio')+'/.config');
 
-  # Returns an object that can be retrieved when package is activated
+
   serialize: ->
 
   # Tear down any state and detach
@@ -62,16 +68,16 @@ class CacheStudioView extends View
   namespace: ->
 
 
-    configs = fs.readJSON(atom.packages.resolvePackagePath('cache-studio')+'/lib/configs.json');
-    StudioAPI.server=configs.UrlToConnect
+
+    StudioAPI.server=@Config.UrlToConnect
     selectNameSpaceView=new SelectNameSpaceView()
     selectNameSpaceView.success (namespace) =>
       @NameSpace=namespace
-      StudioAPI.Obj.data.TempDir=configs.TempDir
+      StudioAPI.Obj.data.TempDir=@Config.Dir
       StudioAPI.Obj.data.NameSpace=namespace
       StudioAPI.getpath (fullpath) =>
         fs.updateJSON(atom.packages.resolvePackagePath('cache-studio')+'/.config', {
-          TempDir: fullpath.Path
+          CurrentDir: fullpath.Path
         });
         atom.project.setPath(fullpath.Path)
         @treeView.toggle()
@@ -79,8 +85,8 @@ class CacheStudioView extends View
     selectNameSpaceView.cancel (call) =>
       selectNameSpaceView.detach()
   save: ->
-    configs = fs.readJSON(atom.packages.resolvePackagePath('cache-studio')+'/lib/configs.json');
-    StudioAPI.server=configs.UrlToConnect
+
+    StudioAPI.server=@Config.UrlToConnect
     editor=atom.workspace.getActiveEditor()
     if @getProperties().type=='cls'
       StudioAPI.UpdateClass.data.namespace=@getProperties().namespace
@@ -96,8 +102,8 @@ class CacheStudioView extends View
 
   saveall: ->
   compile: ->
-    configs = fs.readJSON(atom.packages.resolvePackagePath('cache-studio')+'/lib/configs.json');
-    StudioAPI.server=configs.UrlToConnect
+
+    StudioAPI.server=@Config.UrlToConnect
     @save()
     if @getProperties().type=='cls'
       StudioAPI.CompileClass.data.namespace=@getProperties().namespace
@@ -185,3 +191,8 @@ class CacheStudioView extends View
   CreateClassCache: ->
     #if @addClassView instanceof AddClassView
     addClassView=new AddClassView()
+  TreeViewRefresh: ->
+    StudioAPI.server=@Config.UrlToConnect
+    StudioAPI.Obj.data.NameSpace=@Config.NameSpace
+    StudioAPI.Obj.data.Path=@Config.CurrentDir
+    StudioAPI.refresh (data) =>

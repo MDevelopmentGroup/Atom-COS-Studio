@@ -21,7 +21,8 @@
         { 'label': 'Namespace', 'command': 'cache-studio:namespace' },
         { 'label': 'Compile', 'command': 'cache-studio:compile' },
         { 'label': 'Terminal', 'command': 'cache-studio:terminal' },
-        { 'label': 'Output', 'command': 'cache-studio:output' }
+        { 'label': 'Output', 'command': 'cache-studio:output' },
+        { 'label': 'Refresh', 'command': 'cache-studio:tree-view-refresh' }
       ]
     ]
   }

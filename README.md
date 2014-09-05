@@ -28,6 +28,7 @@ do ##class(MDG.Request).CreateBroker("/mdg-dev")
 
 ## Hot keys
 * ctrl-alt-o select NameSpace
+* ctrl-alt-0 refresh (Classes and Programms)
 * F7 compile current tab
 
 
@@ -57,4 +58,5 @@ do ##class(MDG.Request).CreateBroker("/mdg-dev")
 * Atom, на текущий момент, поддерживает только UTF-8
 ## Горячие клавиши
 * ctrl-alt-o выбрать NameSpace
+* ctrl-alt-0 обновить (Классы и программы)
 * F7 компиляция текущей вкладки
