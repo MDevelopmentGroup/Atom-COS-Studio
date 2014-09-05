@@ -10,5 +10,12 @@
     "atom": ">0.50.0"
   },
   "dependencies": {
+     "async" : ">= 0.2.10",
+     "fsplus" : ">= 0.1.0",
+     "fs-plus" : ">= 2.2.6",
+     "theorist" : ">= 1.0.2",
+     "underscore-plus" : ">= 1.5.1",
+     "language-cos" : "https://github.com/UGroup/atom-language-cos.git",
+     "StudioAPI" : "*",
   }
 }
