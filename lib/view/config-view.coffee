@@ -22,8 +22,10 @@ class ConfigView extends View
 
     @Config=fs.readJSON(atom.packages.resolvePackagePath('cache-studio')+'/.config');
 
-    @UrlToConnect.getEditor().setText(@Config.UrlToConnect)
-    @TempDir.getEditor().setText(@Config.TempDir)
+    if @Config.UrlToConnect
+      @UrlToConnect.getEditor().setText(@Config.UrlToConnect)
+    if @Config.TempDir
+      @TempDir.getEditor().setText(@Config.TempDir)
     p =
       'UrlToConnect':@UrlToConnect
       'TempDir':@TempDir
