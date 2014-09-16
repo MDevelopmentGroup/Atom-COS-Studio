@@ -30,6 +30,9 @@ do ##class(MDG.Request).CreateBroker("/mdg-dev")
 * ctrl-alt-o select NameSpace
 * ctrl-alt-0 refresh (Classes and Programms)
 * F7 compile current tab
+* F8 compile all project
+* ctrl-alt-a save all project, use it after update from git repository
+
 
 
 # Русский | Russian [](#rulink)
@@ -60,3 +63,5 @@ do ##class(MDG.Request).CreateBroker("/mdg-dev")
 * ctrl-alt-o выбрать NameSpace
 * ctrl-alt-0 обновить (Классы и программы)
 * F7 компиляция текущей вкладки
+* F8 компилировать весь проект
+* ctrl-alt-a сохранить весь проект, используйте после обновления Вашего проекта из репозитория
