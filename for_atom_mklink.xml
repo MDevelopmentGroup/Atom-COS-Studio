@@ -1,18 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2014.2 (Build 315U)" ts="2014-09-05 17:00:17">
-<Project name="MDG-DEV" LastModified="2014-08-28 14:01:23.794007">
-  <Items>
-    <ProjectItem name="Includes.INC" type="MAC"></ProjectItem>
-    <ProjectItem name="MDG.Request" type="CLS"></ProjectItem>
-    <ProjectItem name="WEB.Broker" type="CLS"></ProjectItem>
-  </Items>
-</Project>
-
-
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2014.2 (Build 347U)" ts="2014-09-17 23:06:07">
 <Class name="MDG.Request">
 <IncludeCode>%sySystem</IncludeCode>
 <Super>%Persistent</Super>
-<TimeChanged>63435,60849.388201</TimeChanged>
+<TimeChanged>63447,81731.023402</TimeChanged>
 <TimeCreated>63407,36185.325569</TimeCreated>
 
 <Parameter name="Path">
@@ -83,10 +74,10 @@ create broker in the current namespace</Description>
     set ProxyObject.Path=Path
     set ProxyObject.Dir=obj.TempDir
     do ProxyObject.%ToJSON()
-    set %response.Status="200 OK"
     set File=##class(%File).%New()
     do File.CreateDirectory(obj.TempDir)
-    do File.CreateDirectory(Path)
+
+    do File.CreateDirectory(File.NormalizeDirectory( Path))
     do ..WriteClassFiles(obj.NameSpace,Path)
     set defapp = $System.CSP.GetDefaultApp(obj.NameSpace)
     set linkPath = ..GetAppPath(defapp)
@@ -101,6 +92,11 @@ create broker in the current namespace</Description>
         //do ..WriteWebFiles(obj.NameSpace,Path)
     } else {
         /// FIXME - TODO
+        set mklPath = $Replace(Path,"\","/")
+        //w "Tyt",!
+       // w "ln -s "_linkPath_" "_mklPath_"/WebApps ",!
+         do $zf(-1,"ln -s "_linkPath_" "_mklPath_"/WebApps ")
+        //ln -s H:\users\User\Downloads C:\Users\User\Downloads
     }
     do ..ROUTINE(obj.NameSpace,Path)
 
@@ -113,11 +109,11 @@ create broker in the current namespace</Description>
 <FormalSpec>cspapp</FormalSpec>
 <Implementation><![CDATA[
 
-    set ns = $namespace 
+    set ns = $namespace
     set $namespace="%SYS"
-    kill csp 
+    kill csp
     set csp = ##class(Security.Applications).Get(cspapp,.csp)
-    set $namespace=ns 
+    set $namespace=ns
 
     quit $get(csp("Path"))
 ]]></Implementation>
@@ -158,6 +154,10 @@ create broker in the current namespace</Description>
     set tempPath=Path_"/"
     for i=1:1:$ListLength(List)-1 {
         set tempPath=tempPath_$List(List,i)_"/"
+        if $$$ISWINDOWS {}
+        else{
+	        set tempPath=$REPLACE(tempPath,"/",".")
+	        }
         do File.CreateDirectory(tempPath)
     }
     set file=##class(%Stream.FileBinary).%New()
@@ -199,6 +199,10 @@ create broker in the current namespace</Description>
         set status=file.Write($ZConvert(tStream.Read(tStream.Size),"O","UTF8"))
         set status=file.%Save()
         kill file
+        if $$$ISWINDOWS {}
+            else {
+	                     do $zf(-1,"chmod 777 "_tempPath_$List(List,$ListLength(List))_".cls")
+	            }
     }
     set $namespace=sn
 
@@ -279,7 +283,7 @@ Method returns the class text</Description>
         set nc.Super = ""
         set nc.Abstract = ""
         set st = nc.%Save()
-        do ..WriteClassFiles(obj.namespace,..#Path)
+        do ..WriteClassFiles(obj.namespace,obj.TempDir_obj.namespace)
     }
     set stream=##class(%Stream.GlobalCharacter).%New()
     do stream.Write($ZConvert(obj.text,"I","UTF8"))
@@ -318,7 +322,7 @@ Cоздание класса</Description>
     set tSC=##class(%Compiler.UDL.TextServices).GetTextAsStream(obj.namespace,obj.nameClass,.tStream)
     set file=##class(%Stream.FileBinary).%New()
     set Dir=##class(%File).%New()
-    set Path=..#Path_obj.namespace_"/Classes"
+    set Path=obj.Path_obj.namespace_"/Classes"
     set tempPath=Path_"/"
 
     set List=$ListFromString(obj.nameClass,".")
@@ -479,16 +483,31 @@ Cоздание класса</Description>
         set temp=##class(%Routine).%OpenId(routine.Get("Name"))
         set $namespace=ns
         set tempPath=Path_"/"
-        set List=$ListFromString(routine.Get("Name"),".")
+        set type=$E(routine.Get("Name"),$LENGTH(routine.Get("Name"))-2,*)
+        set file=##class(%Stream.FileBinary).%New()
+        if (type="BAS"){
+	set file.Filename=tempPath_routine.Get("Name")
+        	set status=file.CopyFrom(temp)
+        	set status=file.%Save()
+	}
+        if (type="MAC"){
+	set file.Filename=tempPath_routine.Get("Name")
+        	set status=file.CopyFrom(temp)
+        	set status=file.%Save()
+	        }
+        if (type="INT"){
+	              set List=$ListFromString(routine.Get("Name"),".")
         for i=1:1:$ListLength(List)-3 {
             set tempPath=tempPath_$List(List,i)_"/"
             do File.CreateDirectory(tempPath)
         }
-        set file=##class(%Stream.FileBinary).%New()
+
         set file.Filename=tempPath_$List(List,$ListLength(List)-2)_"."_$List(List,$ListLength(List)-1)_"."_$ZConvert($List(List,$ListLength(List)),"L")
         set status=file.CopyFrom(temp)
         set status=file.%Save()
         kill file
+	}
+
     }
 
     quit status
@@ -502,8 +521,8 @@ Cоздание класса</Description>
 	#dim st As %Status=$$$OK
 	$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
 	set File=##class(%File).%New()
-	set st= File.RemoveDirectoryTree("C:\temp\ILDARSHOW\Classes")
-	set st= File.RemoveDirectoryTree("C:\temp\ILDARSHOW\PROGRAMMS")
+	set st= File.RemoveDirectoryTree(obj.Path_"/Classes")
+	set st= File.RemoveDirectoryTree(obj.Path_"/PROGRAMMS")
 	do ..WriteClassFiles(obj.NameSpace,obj.Path)
 	do ..ROUTINE(obj.NameSpace,obj.Path)
 	w "{""status"":"_st_"}"
@@ -517,19 +536,19 @@ Cоздание класса</Description>
 <Implementation><![CDATA[
 	set status=$$$OK
 	$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
-	set List=##class(%Library.ListOfDataTypes).%New()	
+	set List=##class(%Library.ListOfDataTypes).%New()
 	s Dir=obj.CurrentDir_"/Classes"
-	
+
 	d ..FileList(Dir,List)
 	For i=1:1:List.Size{
-		set item=List.GetAt(i) 
+		set item=List.GetAt(i)
 		if $E(item,$LENGTH(item)-3,*)=".cls"{
-			set classname=$E($REPLACE($E(item,$LENGTH(Dir)+2,*),"\","."),0,*-4)
+			set classname=$E($REPLACE($REPLACE($E(item,$LENGTH(Dir)+2,*),"\","."),"/","."),0,*-4)
 			    set sn = $namespace
     			set $namespace = obj.NameSpace
     			set status=$system.OBJ.Compile(classname)
 
-    			set $namespace = sn		
+    			set $namespace = sn
 		}
 	}
 	do ..ROUTINE(obj.NameSpace,obj.CurrentDir)
@@ -543,30 +562,32 @@ Cоздание класса</Description>
 <Implementation><![CDATA[
 	set status=$$$OK
 	$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
-	set List=##class(%Library.ListOfDataTypes).%New()	
+	set List=##class(%Library.ListOfDataTypes).%New()
 	s Dir=obj.CurrentDir_"/Classes"
-	
+
 	d ..FileList(Dir,List)
 	For i=1:1:List.Size{
-		set item=List.GetAt(i) 
+		set item=List.GetAt(i)
 		if $E(item,$LENGTH(item)-3,*)=".cls"{
-			set classname=$E($REPLACE($E(item,$LENGTH(Dir)+2,*),"\","."),0,*-4)
+			set classname=$E($REPLACE($REPLACE($E(item,$LENGTH(Dir)+2,*),"\","."),"/","."),0,*-4)
 			set sn = $namespace
-    		set $namespace = obj.NameSpace
+    			set $namespace = obj.NameSpace
 			set st=##class(%Dictionary.ClassDefinition).%ExistsId(classname)
 			set $namespace=sn
 			if (st)
-			{	
+			{
 				set sn = $namespace
-    			set $namespace = obj.NameSpace
-				set stream=##class(%Stream.FileBinary).%New()
-				set stream.Filename=item
-    			set status= ##class(%Compiler.UDL.TextServices).SetTextFromStream(obj.NameSpace, classname, stream)
-    			set $namespace=sn
+    				set $namespace = obj.NameSpace
+				set tfile=##class(%Stream.FileBinary).%New()
+				set tfile.Filename=item
+				 set stream=##class(%Stream.GlobalCharacter).%New()
+    				do stream.Write($ZConvert(tfile.Read(tfile.Size),"I","UTF8"))
+    				set status= ##class(%Compiler.UDL.TextServices).SetTextFromStream(obj.NameSpace, classname, stream)
+    				set $namespace=sn
 			}
 			else
 			{
-				set sn = $namespace
+			set sn = $namespace
     			set $namespace = obj.NameSpace
     			set class = ##class(%Dictionary.ClassDefinition).%New(classname)
     			set class.Super = ""
@@ -574,12 +595,14 @@ Cоздание класса</Description>
     			set class.Description = ""
     			set status = class.%Save()
     			if status {
-	    			set stream=##class(%Stream.FileBinary).%New()
-					set stream.Filename=item
-    				set status= ##class(%Compiler.UDL.TextServices).SetTextFromStream(obj.NameSpace, classname, stream)	
+	    			set tfile=##class(%Stream.FileBinary).%New()
+				set tfile.Filename=item
+				set stream=##class(%Stream.GlobalCharacter).%New()
+    				do stream.Write($ZConvert(tfile.Read(tfile.Size),"I","UTF8"))
+    				set status= ##class(%Compiler.UDL.TextServices).SetTextFromStream(obj.NameSpace, classname, stream)
 	    		}
-    			set $namespace=sn	
-			}		
+    			set $namespace=sn
+			}
 		}
 	}
 	w "{""status"":"_status_"}"
@@ -594,11 +617,11 @@ Cоздание класса</Description>
 <Implementation><![CDATA[
 	s result=##class(%ResultSet).%New("%Library.File:FileSet")
 	d result.Execute(Dir)
-	while result.Next() 
+	while result.Next()
 	{
 		if result.Get("Type")="F"{do list.Insert(result.Get("Name"))}
-		else{do ..FileList(result.Get("Name"),list)}		
-	}		
+		else{do ..FileList(result.Get("Name"),list)}
+	}
 	quit $$$OK
 ]]></Implementation>
 </Method>
@@ -619,10 +642,12 @@ Cоздание класса</Description>
 </Class>
 
 
+
+
 <Class name="WEB.Broker">
 <Super>%CSP.REST</Super>
-<TimeChanged>63435,59434.761824</TimeChanged>
-<TimeCreated>63431,55629.810634</TimeCreated>
+<TimeChanged>63440,61719.502613</TimeChanged>
+<TimeCreated>63440,61672.437524</TimeCreated>
 
 <XData name="UrlMap">
 <Data><![CDATA[
@@ -647,4 +672,6 @@ Cоздание класса</Description>
 ]]></Data>
 </XData>
 </Class>
+
+
 </Export>
