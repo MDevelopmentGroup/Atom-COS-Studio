@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2014.2 (Build 315U)" ts="2014-09-18 18:43:36">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2015.1 (Build 190U)" ts="2014-09-18 18:05:44">
 <Class name="MDG.Request">
 <IncludeCode>%sySystem</IncludeCode>
 <Super>%Persistent</Super>
-<TimeChanged>63448,67358.523852</TimeChanged>
+<TimeChanged>63448,64929.812878</TimeChanged>
 <TimeCreated>63407,36185.325569</TimeCreated>
 
 <Parameter name="Path">
@@ -475,39 +475,35 @@ Cоздание класса</Description>
     set Path=Path_"/PROGRAMS"
     set File=##class(%File).%New()
     do File.CreateDirectory(Path)
-    set routine=##class(%ResultSet).%New("%Library.Routine:RoutineList")
-    set status=routine.Execute("",1,"INT",namespace)
+    set routine = ##class(%ResultSet).%New("%Library.Routine:RoutineList")
+    set status  = routine.Execute("",1,"SRC",namespace)
     while routine.Next() {
-        set ns=$namespace
-        set $namespace=namespace
-        set temp=##class(%Routine).%OpenId(routine.Get("Name"))
-        set $namespace=ns
-        set tempPath=Path_"/"
-        set type=$E(routine.Get("Name"),$LENGTH(routine.Get("Name"))-2,*)
-        set file=##class(%Stream.FileBinary).%New()
-        if (type="BAS"){
-    set file.Filename=tempPath_routine.Get("Name")
-            set status=file.CopyFrom(temp)
-            set status=file.%Save()
-    }
-        if (type="MAC"){
-    set file.Filename=tempPath_routine.Get("Name")
-            set status=file.CopyFrom(temp)
-            set status=file.%Save()
+        #dim rtnName As %String = routine.Get("Name")
+        do
+        . new $namespace
+        . set ns=$namespace
+        . set $namespace=namespace
+        . set rtn=##class(%Routine).%OpenId(rtnName)
+        if 'rtn.Generated {
+            set $namespace=ns
+            #dim tempPath As %String = Path_"/"
+            #dim List =$ListFromString(rtnName,".")
+            #if 0
+            for i=1:1:$ListLength(List)-3 {
+                set tempPath=tempPath_$List(List,i)_"/"
+                do File.CreateDirectory(tempPath)
             }
-        if (type="INT"){
-                  set List=$ListFromString(routine.Get("Name"),".")
-        for i=1:1:$ListLength(List)-3 {
-            set tempPath=tempPath_$List(List,i)_"/"
-            do File.CreateDirectory(tempPath)
+            #endif
+            set file=##class(%Stream.FileBinary).%New()
+            #if 0
+            set file.Filename=tempPath_$List(List,$ListLength(List)-2)_"."_$List(List,$ListLength(List)-1)_"."_$ZConvert($List(List,$ListLength(List)),"L")
+            #else
+            set file.Filename = tempPath_rtnName
+            #endif
+            set status=file.CopyFrom(rtn)
+            set status=file.%Save()
+            kill file
         }
-
-        set file.Filename=tempPath_$List(List,$ListLength(List)-2)_"."_$List(List,$ListLength(List)-1)_"."_$ZConvert($List(List,$ListLength(List)),"L")
-        set status=file.CopyFrom(temp)
-        set status=file.%Save()
-        kill file
-    }
-
     }
 
     quit status
@@ -681,7 +677,7 @@ Cоздание класса</Description>
 </Class>
 
 
-<Project name="for-atom" LastModified="2014-09-03 15:43:29.984796">
+<Project name="for-atom" LastModified="2014-09-18 17:53:14.217995">
   <Items>
     <ProjectItem name="MDG.Request" type="CLS"></ProjectItem>
     <ProjectItem name="WEB.Broker" type="CLS"></ProjectItem>
