@@ -1,21 +1,24 @@
 {
   "name": "Atom-COS-Studio",
   "main": "./lib/Atom-COS-Studio",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "package for COS",
-  "activationEvents": [ "Atom-COS-Studio:namespace", "Atom-COS-Studio:config"],
+  "activationEvents": [
+    "Atom-COS-Studio:namespace",
+    "Atom-COS-Studio:config"
+  ],
   "repository": "https://github.com/UGroup/Atom-COS-Studio.git",
   "license": "MIT",
   "engines": {
     "atom": ">0.50.0"
   },
   "dependencies": {
-     "async" : ">= 0.2.10",
-     "fsplus" : ">= 0.1.0",
-     "fs-plus" : ">= 2.2.6",
-     "theorist" : ">= 1.0.2",
-     "underscore-plus" : ">= 1.5.1",
-     "language-cos" : "git+https://github.com/UGroup/atom-language-cos.git",
-     "StudioAPI" : "*"
+    "async": ">= 0.2.10",
+    "fsplus": ">= 0.1.0",
+    "fs-plus": ">= 2.2.6",
+    "theorist": ">= 1.0.2",
+    "underscore-plus": ">= 1.5.1",
+    "language-cos": "git+https://github.com/UGroup/atom-language-cos.git",
+    "StudioAPI": "*"
   }
 }
