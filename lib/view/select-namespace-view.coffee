@@ -7,6 +7,7 @@ StudioAPI= require 'StudioAPI'
 module.exports =
 class SelectNameSpaceView extends View
   @Config:null
+  @studioAPI:null
   @content: ->
       @div class: 'cache-modal-dialog overlay from-top', =>
         @div class: "panel", =>
@@ -19,14 +20,14 @@ class SelectNameSpaceView extends View
             @button "OK", outlet:'OKButton', class:'btn'
             @button "Cancel", outlet:'CancelButton', class:'btn'
   initialize:  ->
-    @Config=fs.readJSON(atom.packages.resolvePackagePath('cache-studio')+'/.config');
-    @bind()
+    @studioAPI=new StudioAPI(atom.config.get('Atom-COS-Studio.UrlToConnect'))
     if @hasParent()
       @detach()
     else
       atom.workspaceView.append(this)
-    StudioAPI.namespace (NameSpaces) =>
+    @studioAPI.namespace (NameSpaces) =>
       @SetItems(NameSpaces)
+    @CancelButton.on 'click', =>  @detach()
   serialize: ->
   destroy: ->
     @detach()
@@ -35,20 +36,9 @@ class SelectNameSpaceView extends View
       @detach()
     else
       atom.workspaceView.append(this)
-  # Buttons events
   SetItems: (@values)->
     NameSpaceListView.SetItems(@values)
     @Select.html(NameSpaceListView)
-  bind: () ->
-    @OKButton.on 'click', ->
-      #console. log NameSpaceListView.getSelectedItem()
   success: (call) ->
     @OKButton.on 'click', ->
-      fs.updateJSON(atom.packages.resolvePackagePath('cache-studio')+'/.config', {
-        NameSpace: NameSpaceListView.getSelectedItem()
-      });
-
       call(NameSpaceListView.getSelectedItem())
-  cancel: (call) ->
-    @CancelButton.on 'click', (e)->
-      call(e)

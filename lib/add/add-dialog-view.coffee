@@ -35,7 +35,7 @@ class AddDialogView extends View
   bind: (e) ->
     @OKButton.on 'click', ->
       if listView instanceof ListView
-        atom.workspaceView.trigger('cache-studio:'+listView.getSelectedItem().trigger)
+        atom.workspaceView.trigger('Atom-COS-Studio:'+listView.getSelectedItem().trigger)
         #listView.detach()
        e.destroy()
     @CancelButton.on 'click', ->

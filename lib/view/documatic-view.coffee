@@ -10,7 +10,7 @@ class DocumaticView extends ScrollView
 
 
   initialize:(uri) ->
-    url= uri.substr(25, uri.length)
+    url= uri.substr(28, uri.length)
     @Src[0].src=url
     #@content(namespace)
     super

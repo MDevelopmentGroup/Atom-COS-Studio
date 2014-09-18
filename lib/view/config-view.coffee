@@ -19,17 +19,10 @@ class ConfigView extends View
             @button "OK", outlet:'OKButton', class:'btn'
             @button "Cancel", outlet:'CancelButton', class:'btn'
   initialize:  ->
-
-    @Config=fs.readJSON(atom.packages.resolvePackagePath('cache-studio')+'/.config');
-
-    if @Config.UrlToConnect
-      @UrlToConnect.getEditor().setText(@Config.UrlToConnect)
-    if @Config.TempDir
-      @TempDir.getEditor().setText(@Config.TempDir)
-    p =
-      'UrlToConnect':@UrlToConnect
-      'TempDir':@TempDir
-    @bind(p)
+    @UrlToConnect.getEditor().setText(atom.config.get('Atom-COS-Studio.UrlToConnect'))
+    @TempDir.getEditor().setText(atom.config.get('Atom-COS-Studio.TempDir'))
+    @OKButton.on 'click', => @set()
+    @CancelButton.on 'click', => @detach()
   serialize: ->
   destroy: ->
     @detach()
@@ -38,15 +31,7 @@ class ConfigView extends View
       @detach()
     else
       atom.workspaceView.append(this)
-  # Buttons events
-  bind: (p) ->
-    @OKButton.on 'click', ->
-      fs.updateJSON(atom.packages.resolvePackagePath('cache-studio')+'/.config', {
-        UrlToConnect:p.UrlToConnect.getEditor().getText(),
-        TempDir:p.TempDir.getEditor().getText()
-      });
-  success: (call) ->
-    @OKButton.on 'click', (e)->
-      call(e)
-    @CancelButton.on 'click', (e)->
-      call(e)
+  set: ->
+    atom.config.set('Atom-COS-Studio.UrlToConnect',@UrlToConnect.getEditor().getText())
+    atom.config.set('Atom-COS-Studio.TempDir',@TempDir.getEditor().getText())
+    @detach()

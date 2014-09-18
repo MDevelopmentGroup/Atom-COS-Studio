@@ -1,10 +1,10 @@
 {
-  "name": "cache-studio",
-  "main": "./lib/cache-studio",
+  "name": "Atom-COS-Studio",
+  "main": "./lib/Atom-COS-Studio",
   "version": "0.1.1",
-  "description": "A short description of your package",
-  "activationEvents": ["cache-studio:toggle", "cache-studio:namespace", "cache-studio:config"],
-  "repository": "https://github.com/atom/cache-studio",
+  "description": "package for COS",
+  "activationEvents": [ "Atom-COS-Studio:namespace", "Atom-COS-Studio:config"],
+  "repository": "https://github.com/UGroup/Atom-COS-Studio.git",
   "license": "MIT",
   "engines": {
     "atom": ">0.50.0"

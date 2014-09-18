@@ -5,7 +5,7 @@ class ToolbarView extends View
   @content: ->
     @div class:'panel cache-panel', =>
       @div class:'panel-heading cache-panel-heading', =>
-        @div class: 'block', =>
+        @div class: 'block', outlet:'ButtonList', =>
           @button  outlet:'Config', class:'inline-block btn', =>
             @li class:'fa fa-cogs fa-lg'
           @button  outlet:'NameSpace', class:'inline-block btn', =>
@@ -27,7 +27,8 @@ class ToolbarView extends View
     @bind()
     @tooltip()
   serialize: ->
-
+  add: (el) ->
+    @ButtonList.append(el+'Button')
   close: ->
     if @hasParent()
       @detach()
@@ -45,14 +46,14 @@ class ToolbarView extends View
     @Save.on 'click', ->
       atom.workspaceView.trigger('core:save')
     @Compile.on 'click', ->
-      atom.workspaceView.trigger('cache-studio:compile')
+      atom.workspaceView.trigger('Atom-COS-Studio:compile')
     @Config.on 'click', ->
-      atom.workspaceView.trigger('cache-studio:config')
+      atom.workspaceView.trigger('Atom-COS-Studio:config')
     @NameSpace.on 'click', ->
-      atom.workspaceView.trigger('cache-studio:namespace')
+      atom.workspaceView.trigger('Atom-COS-Studio:namespace')
     @Terminal.on 'click', ->
-      atom.workspaceView.trigger('cache-studio:terminal')
+      atom.workspaceView.trigger('Atom-COS-Studio:terminal')
     @OutPutView.on 'click', ->
-      atom.workspaceView.trigger('cache-studio:output')
+      atom.workspaceView.trigger('Atom-COS-Studio:output')
     @AddDialog.on 'click', ->
-      atom.workspaceView.trigger('cache-studio:add-dialog')
+      atom.workspaceView.trigger('Atom-COS-Studio:add-dialog')

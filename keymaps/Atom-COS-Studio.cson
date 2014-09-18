@@ -8,8 +8,9 @@
 # For more detailed documentation see
 # https://atom.io/docs/latest/advanced/keymaps
 '.workspace':
-  'ctrl-alt-o': 'cache-studio:namespace'
-  'F7': 'cache-studio:compile'
-  'ctrl-alt-0': 'cache-studio:tree-view-refresh'
+  'ctrl-alt-o': 'Atom-COS-Studio:namespace'
+  'F7': 'Atom-COS-Studio:compile'
+  'ctrl-alt-0': 'Atom-COS-Studio:tree-view-refresh'
   'ctrl-alt-a':'window:save-all'
-  'F8': 'cache-studio:compile-all'
+  'F8': 'Atom-COS-Studio:compile-all'
+  'F10': 'Atom-COS-Studio:test'

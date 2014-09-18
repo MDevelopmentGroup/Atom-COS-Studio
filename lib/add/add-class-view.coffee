@@ -4,6 +4,8 @@ fs= require 'fsplus' # JSON fsplus
 module.exports =
 class AddClassView extends View
   @Data:null
+  @NameSpace:null
+  @studioAPI:null
   @content: ->
       @div class: 'cache-modal-dialog overlay from-top', =>
         @div class: "panel", =>
@@ -27,13 +29,14 @@ class AddClassView extends View
             @button "OK", outlet:'OKButton', class:'btn'
             @button "Cancel", outlet:'CancelButton', class:'btn'
 
-  initialize:  ->
+  initialize: (NameSpace) ->
+    @NameSpace=NameSpace
+    @studioAPI=new StudioAPI(atom.config.get('Atom-COS-Studio.UrlToConnect'))
     if @hasParent()
       @detach()
     else
       atom.workspaceView.append(this)
     @bind(this)
-    @Data=fs.readJSON(atom.packages.resolvePackagePath('cache-studio')+'/.config');
 
   serialize: ->
   destroy: ->
@@ -48,14 +51,9 @@ class AddClassView extends View
     ClassName=@ClassName.getEditor().getText()
     Description=@Description.getEditor().getText()
     Extends=@Extends.getEditor().getText()
-
-    StudioAPI.NewClass.data.namespace=@Data.NameSpace
-    StudioAPI.NewClass.data.nameClass="#{PackageName}.#{ClassName}"
-    StudioAPI.NewClass.data.Super=Extends
-    StudioAPI.NewClass.data.Description=Description
-    StudioAPI.createclass (status) =>
+    @studioAPI.createclass {namespace:@NameSpace,nameClass:"#{PackageName}.#{ClassName}",Super:Extends,Description:Description,Path:atom.config.get('Atom-COS-Studio.TempDir')}, (status) =>
       if status=='1'
-        uri=@Data.TempDir+'/Classes/'+PackageName.replace('.','/')+'/'+ClassName+'.cls'
+        uri=atom.config.get('Atom-COS-Studio.TempDir')+"/#{@NameSpace}/"+'/Classes/'+PackageName.replace('.','/')+'/'+ClassName+'.cls'
         atom.workspace.open(uri, split: 'left', searchAllPanes: true)
         @destroy()
       else

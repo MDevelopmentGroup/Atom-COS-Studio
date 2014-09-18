@@ -1,0 +1,30 @@
+# See https://atom.io/docs/latest/creating-a-package#menus for more details
+
+'context-menu':
+  '.tree-view-cache.full-menu':
+    'Add File'  : 'Atom-COS-Studio:add-file'
+    'Add Folder': 'Atom-COS-Studio:add-folder'
+    'Delete'    : 'Atom-COS-Studio:remove'
+  '.output-view.native-key-bindings':
+    'Clear'      : 'output-view:clearoutput'
+    'Close'      : 'output-view:closeoutput'
+  '.editor':
+    'Search': 'Atom-COS-Studio:search'
+
+'menu': [
+  {
+    'label': 'Packages'
+    'submenu': [
+      'label': 'Atom-COS-Studio'
+      'submenu': [
+        { 'label': 'Config', 'command': 'Atom-COS-Studio:config' },
+        { 'label': 'Namespace', 'command': 'Atom-COS-Studio:namespace' },
+        { 'label': 'Compile', 'command': 'Atom-COS-Studio:compile' },
+        { 'label': 'Compile All', 'command': 'Atom-COS-Studio:compile-all' },
+        { 'label': 'Terminal', 'command': 'Atom-COS-Studio:terminal' },
+        { 'label': 'Output', 'command': 'Atom-COS-Studio:output' },
+        { 'label': 'Refresh', 'command': 'Atom-COS-Studio:tree-view-refresh' }
+      ]
+    ]
+  }
+]
