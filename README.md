@@ -5,7 +5,7 @@ Atom - studio 0.1.1  package
 * Download and install:
 * latest Atom release from [https://github.com/atom/atom/releases](https://github.com/atom/atom/releases)
 * Web Terminal for better experience [https://github.com/intersystems-ru/webterminal](https://github.com/intersystems-ru/webterminal) project [page](http://intersystems-ru.github.io/webterminal)
-* import **for_atom.xml** or **for_atom_mklink.xml** (experimental, for Windows only) in *NameSpaceForAtomStudio*
+* import **for_atom.xml** in *NameSpaceForAtomStudio*
 * run in Cache terminal or Web Terminal this commands
 ```
 zn "NameSpaceForAtomStudio"
@@ -23,8 +23,8 @@ do ##class(MDG.Request).CreateBroker("/mdg-dev")
   * you can open Web Terminal in separate window (if installed)
 
 ##  Attention for current version
-* only for local projects on Windows platform
-*
+* only for local projects
+* we recomendate use latest version of atom.io
 
 ## Hot keys
 * ctrl-alt-o select NameSpace
