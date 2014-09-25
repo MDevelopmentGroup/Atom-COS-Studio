@@ -1,6 +1,6 @@
 {View, EditorView, PackageManager} = require 'atom'
 
-StudioAPI= require 'StudioAPI'
+StudioAPI= require '../StudioAPI'
 fs= require 'fsplus'
 module.exports =
 class ConfigView extends View

@@ -1,5 +1,5 @@
 {View, EditorView} = require 'atom'
-StudioAPI= require 'StudioAPI'
+StudioAPI= require '../StudioAPI'
 fs= require 'fsplus' # JSON fsplus
 module.exports =
 class AddClassView extends View

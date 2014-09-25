@@ -1,6 +1,6 @@
 AtomCOSStudioView = require './Atom-COS-Studio-view'
 remote = require 'remote'
-StudioAPI= require 'StudioAPI'
+StudioAPI= require './StudioAPI'
 module.exports =
   configDefaults:
     UrlToConnect:'http://localhost:57772/'

@@ -1,7 +1,7 @@
 path = require 'path'
 fs = require 'fs-plus'
 Dialog = require './dialog'
-StudioAPI= require 'StudioAPI'
+StudioAPI= require '../StudioAPI'
 module.exports =
 class AddDialog extends Dialog
   constructor: (initialPath, isCreatingFile) ->

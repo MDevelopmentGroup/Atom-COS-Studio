@@ -3,7 +3,7 @@ NameSpaceListView=require './namespace-list-view'
 #TreeView=require './tree-view'
 NameSpaceListView= new NameSpaceListView()
 fs= require 'fsplus' # JSON fsplus
-StudioAPI= require 'StudioAPI'
+StudioAPI= require '../StudioAPI'
 module.exports =
 class SelectNameSpaceView extends View
   @Config:null
