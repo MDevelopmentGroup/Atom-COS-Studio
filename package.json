@@ -1,7 +1,7 @@
 {
   "name": "Atom-COS-Studio",
   "main": "./lib/Atom-COS-Studio",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "package for COS",
   "activationEvents": [
     "Atom-COS-Studio:namespace",
