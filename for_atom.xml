@@ -1,9 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2015.1 (Build 190U)" ts="2014-09-18 18:05:44">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2014.2 (Build 315U)" ts="2014-09-26 17:09:16">
+<Project name="Atom-Studio" LastModified="2014-09-26 17:08:28.629689">
+  <Items>
+    <ProjectItem name="MDG" type="PKG"></ProjectItem>
+    <ProjectItem name="WEB" type="PKG"></ProjectItem>
+    <ProjectItem name="Studio" type="PKG"></ProjectItem>
+  </Items>
+</Project>
+
+
+
+
 <Class name="MDG.Request">
 <IncludeCode>%sySystem</IncludeCode>
 <Super>%Persistent</Super>
-<TimeChanged>63448,64929.812878</TimeChanged>
+<TimeChanged>63442,40445.415851</TimeChanged>
 <TimeCreated>63407,36185.325569</TimeCreated>
 
 <Parameter name="Path">
@@ -156,8 +167,8 @@ create broker in the current namespace</Description>
         set tempPath=tempPath_$List(List,i)_"/"
         if $$$ISWINDOWS {}
         else{
-            set tempPath=$REPLACE(tempPath,"/",".")
-            }
+	        set tempPath=$REPLACE(tempPath,"/",".")
+	        }
         do File.CreateDirectory(tempPath)
     }
     set file=##class(%Stream.FileBinary).%New()
@@ -201,8 +212,8 @@ create broker in the current namespace</Description>
         kill file
         if $$$ISWINDOWS {}
             else {
-                         do $zf(-1,"chmod 777 "_tempPath_$List(List,$ListLength(List))_".cls")
-                }
+	                     do $zf(-1,"chmod 777 "_tempPath_$List(List,$ListLength(List))_".cls")
+	            }
     }
     set $namespace=sn
 
@@ -472,38 +483,42 @@ Cоздание класса</Description>
 <Implementation><![CDATA[
     #dim st As %Status=$$$OK
 
-    set Path=Path_"/PROGRAMS"
+    set Path=Path_"/PROGRAMMS"
     set File=##class(%File).%New()
     do File.CreateDirectory(Path)
-    set routine = ##class(%ResultSet).%New("%Library.Routine:RoutineList")
-    set status  = routine.Execute("",1,"SRC",namespace)
+    set routine=##class(%ResultSet).%New("%Library.Routine:RoutineList")
+    set status=routine.Execute("",1,"INT",namespace)
     while routine.Next() {
-        #dim rtnName As %String = routine.Get("Name")
-        do
-        . new $namespace
-        . set ns=$namespace
-        . set $namespace=namespace
-        . set rtn=##class(%Routine).%OpenId(rtnName)
-        if 'rtn.Generated {
-            set $namespace=ns
-            #dim tempPath As %String = Path_"/"
-            #dim List =$ListFromString(rtnName,".")
-            #if 0
-            for i=1:1:$ListLength(List)-3 {
-                set tempPath=tempPath_$List(List,i)_"/"
-                do File.CreateDirectory(tempPath)
-            }
-            #endif
-            set file=##class(%Stream.FileBinary).%New()
-            #if 0
-            set file.Filename=tempPath_$List(List,$ListLength(List)-2)_"."_$List(List,$ListLength(List)-1)_"."_$ZConvert($List(List,$ListLength(List)),"L")
-            #else
-            set file.Filename = tempPath_rtnName
-            #endif
-            set status=file.CopyFrom(rtn)
-            set status=file.%Save()
-            kill file
+        set ns=$namespace
+        set $namespace=namespace
+        set temp=##class(%Routine).%OpenId(routine.Get("Name"))
+        set $namespace=ns
+        set tempPath=Path_"/"
+        set type=$E(routine.Get("Name"),$LENGTH(routine.Get("Name"))-2,*)
+        set file=##class(%Stream.FileBinary).%New()
+        if (type="BAS"){
+	set file.Filename=tempPath_routine.Get("Name")
+        	set status=file.CopyFrom(temp)
+        	set status=file.%Save()
+	}
+        if (type="MAC"){
+	set file.Filename=tempPath_routine.Get("Name")
+        	set status=file.CopyFrom(temp)
+        	set status=file.%Save()
+	        }
+        if (type="INT"){
+	              set List=$ListFromString(routine.Get("Name"),".")
+        for i=1:1:$ListLength(List)-3 {
+            set tempPath=tempPath_$List(List,i)_"/"
+            do File.CreateDirectory(tempPath)
         }
+
+        set file.Filename=tempPath_$List(List,$ListLength(List)-2)_"."_$List(List,$ListLength(List)-1)_"."_$ZConvert($List(List,$ListLength(List)),"L")
+        set status=file.CopyFrom(temp)
+        set status=file.%Save()
+        kill file
+	}
+
     }
 
     quit status
@@ -514,15 +529,15 @@ Cоздание класса</Description>
 <ClassMethod>1</ClassMethod>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-    #dim st As %Status=$$$OK
-    $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
-    set File=##class(%File).%New()
-    set st= File.RemoveDirectoryTree(obj.Path)
-    set st= File.RemoveDirectoryTree(obj.Path)
-    do ..WriteClassFiles(obj.NameSpace,obj.Path)
-    do ..ROUTINE(obj.NameSpace,obj.Path)
-    w "{""status"":"_st_"}"
-    quit 1
+	#dim st As %Status=$$$OK
+	$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+	set File=##class(%File).%New()
+	set st= File.RemoveDirectoryTree("C:\temp\ILDARSHOW\Classes")
+	set st= File.RemoveDirectoryTree("C:\temp\ILDARSHOW\PROGRAMMS")
+	do ..WriteClassFiles(obj.NameSpace,obj.Path)
+	do ..ROUTINE(obj.NameSpace,obj.Path)
+	w "{""status"":"_st_"}"
+	quit 1
 ]]></Implementation>
 </Method>
 
@@ -530,25 +545,25 @@ Cоздание класса</Description>
 <ClassMethod>1</ClassMethod>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-    set status=$$$OK
-    $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
-    set List=##class(%Library.ListOfDataTypes).%New()
-    s Dir=obj.CurrentDir_"/Classes"
+	set status=$$$OK
+	$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+	set List=##class(%Library.ListOfDataTypes).%New()
+	s Dir=obj.CurrentDir_"/Classes"
 
-    d ..FileList(Dir,List)
-    For i=1:1:List.Size{
-        set item=List.GetAt(i)
-        if $E(item,$LENGTH(item)-3,*)=".cls"{
-            set classname=$E($REPLACE($REPLACE($E(item,$LENGTH(Dir)+2,*),"\","."),"/","."),0,*-4)
-                set sn = $namespace
-                set $namespace = obj.NameSpace
-                set status=$system.OBJ.Compile(classname)
+	d ..FileList(Dir,List)
+	For i=1:1:List.Size{
+		set item=List.GetAt(i)
+		if $E(item,$LENGTH(item)-3,*)=".cls"{
+			set classname=$E($REPLACE($REPLACE($E(item,$LENGTH(Dir)+2,*),"\","."),"/","."),0,*-4)
+			    set sn = $namespace
+    			set $namespace = obj.NameSpace
+    			set status=$system.OBJ.Compile(classname)
 
-                set $namespace = sn
-        }
-    }
-    do ..ROUTINE(obj.NameSpace,obj.CurrentDir)
-    quit $$$OK
+    			set $namespace = sn
+		}
+	}
+	do ..ROUTINE(obj.NameSpace,obj.CurrentDir)
+	quit $$$OK
 ]]></Implementation>
 </Method>
 
@@ -556,53 +571,53 @@ Cоздание класса</Description>
 <ClassMethod>1</ClassMethod>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-    set status=$$$OK
-    $$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
-    set List=##class(%Library.ListOfDataTypes).%New()
-    s Dir=obj.CurrentDir_"/Classes"
+	set status=$$$OK
+	$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+	set List=##class(%Library.ListOfDataTypes).%New()
+	s Dir=obj.CurrentDir_"/Classes"
 
-    d ..FileList(Dir,List)
-    For i=1:1:List.Size{
-        set item=List.GetAt(i)
-        if $E(item,$LENGTH(item)-3,*)=".cls"{
-            set classname=$E($REPLACE($REPLACE($E(item,$LENGTH(Dir)+2,*),"\","."),"/","."),0,*-4)
-            set sn = $namespace
-                set $namespace = obj.NameSpace
-            set st=##class(%Dictionary.ClassDefinition).%ExistsId(classname)
-            set $namespace=sn
-            if (st)
-            {
-                set sn = $namespace
-                    set $namespace = obj.NameSpace
-                set tfile=##class(%Stream.FileBinary).%New()
-                set tfile.Filename=item
-                 set stream=##class(%Stream.GlobalCharacter).%New()
-                    do stream.Write($ZConvert(tfile.Read(tfile.Size),"I","UTF8"))
-                    set status= ##class(%Compiler.UDL.TextServices).SetTextFromStream(obj.NameSpace, classname, stream)
-                    set $namespace=sn
-            }
-            else
-            {
-            set sn = $namespace
-                set $namespace = obj.NameSpace
-                set class = ##class(%Dictionary.ClassDefinition).%New(classname)
-                set class.Super = ""
-                set class.Abstract = ""
-                set class.Description = ""
-                set status = class.%Save()
-                if status {
-                    set tfile=##class(%Stream.FileBinary).%New()
-                set tfile.Filename=item
-                set stream=##class(%Stream.GlobalCharacter).%New()
-                    do stream.Write($ZConvert(tfile.Read(tfile.Size),"I","UTF8"))
-                    set status= ##class(%Compiler.UDL.TextServices).SetTextFromStream(obj.NameSpace, classname, stream)
-                }
-                set $namespace=sn
-            }
-        }
-    }
-    w "{""status"":"_status_"}"
-    Quit $$$OK
+	d ..FileList(Dir,List)
+	For i=1:1:List.Size{
+		set item=List.GetAt(i)
+		if $E(item,$LENGTH(item)-3,*)=".cls"{
+			set classname=$E($REPLACE($REPLACE($E(item,$LENGTH(Dir)+2,*),"\","."),"/","."),0,*-4)
+			set sn = $namespace
+    			set $namespace = obj.NameSpace
+			set st=##class(%Dictionary.ClassDefinition).%ExistsId(classname)
+			set $namespace=sn
+			if (st)
+			{
+				set sn = $namespace
+    				set $namespace = obj.NameSpace
+				set tfile=##class(%Stream.FileBinary).%New()
+				set tfile.Filename=item
+				 set stream=##class(%Stream.GlobalCharacter).%New()
+    				do stream.Write($ZConvert(tfile.Read(tfile.Size),"I","UTF8"))
+    				set status= ##class(%Compiler.UDL.TextServices).SetTextFromStream(obj.NameSpace, classname, stream)
+    				set $namespace=sn
+			}
+			else
+			{
+			set sn = $namespace
+    			set $namespace = obj.NameSpace
+    			set class = ##class(%Dictionary.ClassDefinition).%New(classname)
+    			set class.Super = ""
+    			set class.Abstract = ""
+    			set class.Description = ""
+    			set status = class.%Save()
+    			if status {
+	    			set tfile=##class(%Stream.FileBinary).%New()
+				set tfile.Filename=item
+				set stream=##class(%Stream.GlobalCharacter).%New()
+    				do stream.Write($ZConvert(tfile.Read(tfile.Size),"I","UTF8"))
+    				set status= ##class(%Compiler.UDL.TextServices).SetTextFromStream(obj.NameSpace, classname, stream)
+	    		}
+    			set $namespace=sn
+			}
+		}
+	}
+	w "{""status"":"_status_"}"
+	Quit $$$OK
 ]]></Implementation>
 </Method>
 
@@ -611,14 +626,14 @@ Cоздание класса</Description>
 <FormalSpec><![CDATA[Dir,&list:%ListOfDataTypes]]></FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-    s result=##class(%ResultSet).%New("%Library.File:FileSet")
-    d result.Execute(Dir)
-    while result.Next()
-    {
-        if result.Get("Type")="F"{do list.Insert(result.Get("Name"))}
-        else{do ..FileList(result.Get("Name"),list)}
-    }
-    quit $$$OK
+	s result=##class(%ResultSet).%New("%Library.File:FileSet")
+	d result.Execute(Dir)
+	while result.Next()
+	{
+		if result.Get("Type")="F"{do list.Insert(result.Get("Name"))}
+		else{do ..FileList(result.Get("Name"),list)}
+	}
+	quit $$$OK
 ]]></Implementation>
 </Method>
 
@@ -638,9 +653,148 @@ Cоздание класса</Description>
 </Class>
 
 
+<Class name="Studio.FileView">
+<Super>%RegisteredObject</Super>
+<TimeChanged>63456,57071.774484</TimeChanged>
+<TimeCreated>63454,43571.104508</TimeCreated>
+
+<Method name="GetClassList">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set NameSpace=%request.Get("NameSpace","")
+	set SubPackage=%request.Get("SubPackage","")
+	s ns=$namespace
+	s $namespace=NameSpace
+	set pObject=##class(%ZEN.proxyObject).%New()
+	set pObject.ClassList=##class(%ListOfDataTypes).%New()
+
+	set tList=""
+ 	
+ 	
+	if SubPackage="" {
+		set sql="SELECT $LIST($LISTFROMSTRING(Name,'.'),1) AS Name FROM %Dictionary.ClassDefinition  Group by $LIST($LISTFROMSTRING(Name,'.'),1)"
+	}
+	else {
+		set sql="SELECT * FROM %Dictionary.ClassDefinition where Name %STARTSWITH '"_SubPackage_".'"
+	}
+	s l=$LL($LISTFROMSTRING(SubPackage,"."))
+	set sttm=##class(%SQL.Statement).%New()
+	set sttm.%ObjectSelectMode=1
+	set st=sttm.%Prepare(sql)
+	set res=sttm.%Execute()
+	while(res.%Next()'=0){
+		//w res.%Get("Name"),!
+		s NameLENGTH=$LL($LISTFROMSTRING(res.%Get("Name"),"."))
+		if SubPackage=""{
+			s tObj=##class(%ZEN.proxyObject).%New()
+			s tObj.isFolder=1
+			s tObj.DisplayName=res.%Get("Name")
+			s tObj.Name=res.%Get("Name")
+			do pObject.ClassList.Insert(tObj)
+		}
+		else{
+			if ((NameLENGTH-1)<=l){
+				s DisplayName=$LISTTOSTRING($LIST($LISTFROMSTRING(res.%Get("Name"),"."),l+1,*),".")
+				s Name=res.%Get("Name")
+				s tObj=##class(%ZEN.proxyObject).%New()
+				s tObj.isFolder=0
+				s tObj.DisplayName=DisplayName
+				s tObj.Name=Name
+				do pObject.ClassList.Insert(tObj)
+			}
+			else{
+				s DisplayName=$LISTTOSTRING($LIST($LISTFROMSTRING(res.%Get("Name"),"."),l+1,l+1),".")
+				s Name=res.%Get("Name")
+			
+				s tST=1
+	 			for i=1:1:$LL(tList){
+		 			if ($FIND(Name,$LI(tList,i)_".")'=0){
+			 			s tST=0
+			 		}
+		 		}
+		 		if (tST){
+					s tObj=##class(%ZEN.proxyObject).%New()
+					s tObj.isFolder=1
+				s tObj.DisplayName=DisplayName
+				s tObj.Name=$LISTTOSTRING($LIST($LISTFROMSTRING(res.%Get("Name"),"."),1,l+1),".")
+				do pObject.ClassList.Insert(tObj)
+				s $LIST(tList,$LL(tList)+1)=DisplayName		
+				}
+			}
+		}
+
+	}
+	do pObject.%ToJSON()
+	s $namespace= ns	
+	Q $$$OK
+]]></Implementation>
+</Method>
+
+<Query name="Class">
+<Type>%SQLQuery</Type>
+<SqlQuery>	SELECT * FROM %Studio.Project</SqlQuery>
+</Query>
+
+<Query name="Project">
+<Type>%SQLQuery</Type>
+<SqlQuery>	SELECT * FROM %Studio.Project</SqlQuery>
+</Query>
+
+<Query name="ProjectItems">
+<Type>%SQLQuery</Type>
+<FormalSpec>Project</FormalSpec>
+<SqlQuery>	SELECT Name, Type FROM %Studio.ProjectItem WHERE Project=:Project</SqlQuery>
+</Query>
+
+<Method name="GetProjects">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st AS %Status=$$$OK
+	s pObject=##class(%ZEN.proxyObject).%New()
+	s pObject.Projects=##class(%ListOfDataTypes).%New()
+	s res=##class(%ResultSet).%New("Studio.FileView:Project")
+	s st= res.Execute()
+	while res.Next(){
+		s tObj=##class(%ZEN.proxyObject).%New()
+		s tObj.Name=res.Get("Name")
+		s tObj.LastModified=res.Get("LastModified")
+		s st= pObject.Projects.Insert(tObj)
+	}
+	s st=pObject.%ToJSON()
+	q st
+]]></Implementation>
+</Method>
+
+<Method name="GetProject">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>Name</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st AS %Status=$$$OK
+	s pObject=##class(%ZEN.proxyObject).%New()
+	s pObject.Project=##class(%ListOfDataTypes).%New()
+	s res=##class(%ResultSet).%New("Studio.FileView:ProjectItems")
+	s st= res.Execute(Name)
+	while res.Next(){
+		s tObj=##class(%ZEN.proxyObject).%New()
+		s tObj.Name=res.Get("Name")
+		s tObj.Type=res.Get("Type")
+		s st= pObject.Project.Insert(tObj)
+	}
+	s st=pObject.%ToJSON()
+	q st
+]]></Implementation>
+</Method>
+</Class>
+
+
+
+
 <Class name="WEB.Broker">
 <Super>%CSP.REST</Super>
-<TimeChanged>63448,55169.88435</TimeChanged>
+<TimeChanged>63455,42812.427142</TimeChanged>
 <TimeCreated>63440,61672.437524</TimeCreated>
 
 <XData name="UrlMap">
@@ -661,26 +815,81 @@ Cоздание класса</Description>
     <Route Url="/refresh" Method="POST" Call="MDG.Request:Refresh"/>
     <Route Url="/saveall" Method="POST" Call="MDG.Request:SaveAll"/>
     <Route Url="/compileall" Method="POST" Call="MDG.Request:CompileAll"/>
-    <Route Url="/test" Method="GET" Call="WEB.Broker:Test"/>
+    <Route Url="/get" Method="GET" Call="Studio.FileView:GetClassList"/>
     
 </Routes>
 ]]></Data>
 </XData>
-
-<Method name="Test">
-<ClassMethod>1</ClassMethod>
-<Implementation><![CDATA[
-   write !,"connect with Atom COS Broker is Ok!"
-   quit $$$OK
-]]></Implementation>
-</Method>
 </Class>
 
 
-<Project name="for-atom" LastModified="2014-09-18 17:53:14.217995">
-  <Items>
-    <ProjectItem name="MDG.Request" type="CLS"></ProjectItem>
-    <ProjectItem name="WEB.Broker" type="CLS"></ProjectItem>
-  </Items>
-</Project>
+
+
+<Class name="WEB.Test.NewClass1">
+<Super>%Persistent</Super>
+<TimeChanged>63454,53842.808987</TimeChanged>
+<TimeCreated>63454,53842.624228</TimeCreated>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^WEB.Test.NewClass1D</DataLocation>
+<DefaultData>NewClass1DefaultData</DefaultData>
+<IdLocation>^WEB.Test.NewClass1D</IdLocation>
+<IndexLocation>^WEB.Test.NewClass1I</IndexLocation>
+<StreamLocation>^WEB.Test.NewClass1S</StreamLocation>
+<Data name="NewClass1DefaultData">
+<Structure>listnode</Structure>
+<Subscript/>
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="WEB.Test.NewClass12">
+<Super>%Persistent</Super>
+<TimeChanged>63455,37251.845356</TimeChanged>
+<TimeCreated>63455,37251.664707</TimeCreated>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^WEB.Test.NewClass12D</DataLocation>
+<DefaultData>NewClass12DefaultData</DefaultData>
+<IdLocation>^WEB.Test.NewClass12D</IdLocation>
+<IndexLocation>^WEB.Test.NewClass12I</IndexLocation>
+<StreamLocation>^WEB.Test.NewClass12S</StreamLocation>
+<Data name="NewClass12DefaultData">
+<Structure>listnode</Structure>
+<Subscript/>
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+
+
+<Class name="WEB.Test.Test3.NewClass2">
+<Super>%Persistent</Super>
+<TimeChanged>63455,37303.525066</TimeChanged>
+<TimeCreated>63455,37303.356434</TimeCreated>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^WEB.Test.Test3.NewClass2D</DataLocation>
+<DefaultData>NewClass2DefaultData</DefaultData>
+<IdLocation>^WEB.Test.Test3.NewClass2D</IdLocation>
+<IndexLocation>^WEB.Test.Test3.NewClass2I</IndexLocation>
+<StreamLocation>^WEB.Test.Test3.NewClass2S</StreamLocation>
+<Data name="NewClass2DefaultData">
+<Structure>listnode</Structure>
+<Subscript/>
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
 </Export>

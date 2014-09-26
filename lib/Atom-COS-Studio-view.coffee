@@ -15,6 +15,7 @@ ToolbarView=require './view/toolbar-view'
 AddDialogView=require './add/add-dialog-view'
 AddClassView=require './add/add-class-view'
 StatusPanelView=require './status-panel/status-panel-view'
+WorkSpacePanelView=require './workspace-panel/workspace-panel-view'
 module.exports =
 class AtomCOSStudioView extends View
   @studioAPI:null
@@ -31,7 +32,7 @@ class AtomCOSStudioView extends View
     atom.config.observe 'Atom-COS-Studio.UrlToConnect', =>
       @studioAPI.setURL(atom.config.get('Atom-COS-Studio.UrlToConnect'))
     @handleEvents() # events
-    @treeView =new TreeView()
+    #@treeView =new TreeView()
     atom.workspace.registerOpener (uriToOpen) ->
 
       #console.log path.extname(uriToOpen)
@@ -42,8 +43,8 @@ class AtomCOSStudioView extends View
       if 'atom-cos-studio-documatic:'==protocol
         return new DocumaticView(uriToOpen)
     @toolbarView=new ToolbarView()
-    @loadPlugins(@toolbarView)
-
+    #@loadPlugins(@toolbarView)
+    workSpacePanelView=new WorkSpacePanelView [{title:'Project'},{title:'NameSpace'}]
   serialize: ->
   destroy: ->
     @detach()
