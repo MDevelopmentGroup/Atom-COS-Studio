@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2015.1 (Build 190U)" ts="2014-09-18 18:05:44">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2015.1 (Build 190U)" ts="2014-09-29 01:33:26">
 <Class name="MDG.Request">
-<IncludeCode>%sySystem</IncludeCode>
+<IncludeCode>%sySystem,%occFile</IncludeCode>
 <Super>%Persistent</Super>
-<TimeChanged>63448,64929.812878</TimeChanged>
+<TimeChanged>63459,4495.356225</TimeChanged>
 <TimeCreated>63407,36185.325569</TimeCreated>
 
 <Parameter name="Path">
@@ -11,6 +11,38 @@
 FIXME - Windows specific</Description>
 <Default>C:/temp/</Default>
 </Parameter>
+
+<Method name="CreateDirectoryRecurse">
+<Description>
+create directory (recursively)</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>Path:%String</FormalSpec>
+<Implementation><![CDATA[
+    #dim NormalizedPath As %String = $$$FileNormalizeDirectory(Path)
+    if $$$ISWINDOWS {
+        do $zf(-1, "mkdir "_NormalizedPath)
+    }
+    else {
+        do $zf(-1, "mkdir -p "_NormalizedPath)
+    }
+]]></Implementation>
+</Method>
+
+<Method name="BareName">
+<Description>
+return classname without extension .cls</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>ClassName:%String</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+    #dim Length As %Numeric = $Length(ClassName,".")
+    #dim LastP As %String = $Piece(ClassName,".",Length)
+    If LastP="cls" {
+        Set ClassName = $Piece(ClassName,".",1,Length-1)
+    }
+    Quit ClassName
+]]></Implementation>
+</Method>
 
 <Method name="CreateBroker">
 <Description>
@@ -75,9 +107,9 @@ create broker in the current namespace</Description>
     set ProxyObject.Dir=obj.TempDir
     do ProxyObject.%ToJSON()
     set File=##class(%File).%New()
-    do File.CreateDirectory(obj.TempDir)
+    do ..CreateDirectoryRecurse(obj.TempDir)
 
-    do File.CreateDirectory(File.NormalizeDirectory( Path))
+    do ..CreateDirectoryRecurse(Path)
     do ..WriteClassFiles(obj.NameSpace,Path)
     set defapp = $System.CSP.GetDefaultApp(obj.NameSpace)
     set linkPath = ..GetAppPath(defapp)
@@ -134,9 +166,8 @@ create broker in the current namespace</Description>
     set csp = ##class(Security.Applications).Get(defapp,.csp)
     set $namespace=ns
     set File=##class(%File).%New()
-    set status=File.CreateDirectory(Path)
     set Path=Path_defapp
-    set status=File.CreateDirectory(Path)
+    set status=..CreateDirectoryRecurse(Path)
     set status=File.CopyDir($get(csp("Path")),Path,1)
 
     quit status
@@ -158,7 +189,7 @@ create broker in the current namespace</Description>
         else{
             set tempPath=$REPLACE(tempPath,"/",".")
             }
-        do File.CreateDirectory(tempPath)
+        do ..CreateDirectoryRecurse(tempPath)
     }
     set file=##class(%Stream.FileBinary).%New()
     set file.Filename=tempPath_$List(List,$ListLength(List))_".cls"
@@ -180,29 +211,34 @@ create broker in the current namespace</Description>
     set sn = $namespace
     set $namespace = NS
     set File=##class(%File).%New()
-    do File.CreateDirectory(Path)
 
     set s=##class(%SQL.Statement).%New()
+    #if 0
     set sql = "SELECT * FROM %Dictionary.ClassDefinition  where NOT id %STARTSWITH '%' and system <>4"
+    #else
+    set sql = "call %Library.RoutineMgr_StudioOpenDialog('*.CLS',,,1/*system files*/,1/*flat*/,0/*not studio*/,0/*show generated*/,,,0/*mapped*/)"
+    #endif
     set status=s.%Prepare(sql)
     set rs=s.%Execute()
     while rs.%Next() {
         set tempPath=Path_"/"
-        set List=$ListFromString(rs.%Get("ID"),".")
+        #dim BareName As %String = ..BareName(rs.%Get("Name"))
+        set List=$ListFromString(BareName,".")
         for i=1:1:$ListLength(List)-1 {
             set tempPath=tempPath_$List(List,i)_"/"
-            do File.CreateDirectory(tempPath)
         }
-        set tSC=##class(%Compiler.UDL.TextServices).GetTextAsStream(NS,rs.%Get("ID"),.tStream)
+        do ..CreateDirectoryRecurse(tempPath)
+        // FIXME - %Compiler.UDL.TextServices).GetTextAsArray has a bug - not properly handling names with .cls
+        set tSC=##class(%Compiler.UDL.TextServices).GetTextAsStream(NS,BareName,.tStream)
         set file=##class(%Stream.FileBinary).%New()
         set file.Filename=tempPath_$List(List,$ListLength(List))_".cls"
         set status=file.Write($ZConvert(tStream.Read(tStream.Size),"O","UTF8"))
         set status=file.%Save()
         kill file
         if $$$ISWINDOWS {}
-            else {
-                         do $zf(-1,"chmod 777 "_tempPath_$List(List,$ListLength(List))_".cls")
-                }
+        else {
+            do $zf(-1,"chmod 777 "_tempPath_$List(List,$ListLength(List))_".cls")
+        }
     }
     set $namespace=sn
 
@@ -248,13 +284,17 @@ Method returns the class text</Description>
     set sn = $namespace
     set $namespace = obj.NameSpace
     set s=##class(%SQL.Statement).%New()
+    #if 0
     set sql = "SELECT * FROM %Dictionary.ClassDefinition  where NOT id %STARTSWITH '%' and system <>4"
+    #else
+    set sql = "call %Library.RoutineMgr_StudioOpenDialog('*.CLS',,,1/*system files*/,1/*flat*/,0/*not studio*/,0/*show generated*/,,,0/*mapped*/)"
+    #endif
     set status=s.%Prepare(sql)
     set str = ""
     set rs=s.%Execute()
     write "["
     while rs.%Next() {
-        set str = str_ "{""Name"":"""_rs.%Get("ID")_"""},"
+        set str = str_ "{""Name"":"""_..BareName(rs.%Get("Name"))_"""},"
     }
     write $Extract(str,1,*-1)
     write "]"
@@ -319,21 +359,21 @@ Cоздание класса</Description>
     set status = o.%Save()
     w status
     if status {
-    set tSC=##class(%Compiler.UDL.TextServices).GetTextAsStream(obj.namespace,obj.nameClass,.tStream)
-    set file=##class(%Stream.FileBinary).%New()
-    set Dir=##class(%File).%New()
-    set Path=obj.Path_obj.namespace_"/Classes"
-    set tempPath=Path_"/"
+        set tSC=##class(%Compiler.UDL.TextServices).GetTextAsStream(obj.namespace,obj.nameClass,.tStream)
+        set file=##class(%Stream.FileBinary).%New()
+        set Dir=##class(%File).%New()
+        set Path=obj.Path_obj.namespace_"/Classes"
+        set tempPath=Path_"/"
 
-    set List=$ListFromString(obj.nameClass,".")
-    for i=1:1:$ListLength(List)-1 {
-        set tempPath=tempPath_$List(List,i)_"/"
-        do Dir.CreateDirectory(tempPath)
-    }
-    set file.Filename=tempPath_$List(List,$ListLength(List))_".cls"
-    set status=file.Write($ZConvert(tStream.Read(tStream.Size),"O","UTF8"))
-    set status=file.%Save()
-    kill file
+        set List=$ListFromString(obj.nameClass,".")
+        for i=1:1:$ListLength(List)-1 {
+            set tempPath=tempPath_$List(List,i)_"/"
+        }
+        do ..CreateDirectoryRecurse(tempPath)
+        set file.Filename=tempPath_$List(List,$ListLength(List))_".cls"
+        set status=file.Write($ZConvert(tStream.Read(tStream.Size),"O","UTF8"))
+        set status=file.%Save()
+        kill file
     }
     set $namespace = sn
 
@@ -474,7 +514,7 @@ Cоздание класса</Description>
 
     set Path=Path_"/PROGRAMS"
     set File=##class(%File).%New()
-    do File.CreateDirectory(Path)
+    do ..CreateDirectoryRecurse(Path)
     set routine = ##class(%ResultSet).%New("%Library.Routine:RoutineList")
     set status  = routine.Execute("",1,"SRC",namespace)
     while routine.Next() {
@@ -677,7 +717,7 @@ Cоздание класса</Description>
 </Class>
 
 
-<Project name="for-atom" LastModified="2014-09-18 17:53:14.217995">
+<Project name="for-atom" LastModified="2014-09-29 01:33:26.126853" TargetType="0">
   <Items>
     <ProjectItem name="MDG.Request" type="CLS"></ProjectItem>
     <ProjectItem name="WEB.Broker" type="CLS"></ProjectItem>
