@@ -1,7 +1,7 @@
 {View} = require 'atom'
 ListView=require './list-view'
 listView = new ListView()
-StudioAPI= require 'StudioAPI'
+StudioAPI= require '../studio-api/studio-api'
 module.exports =
 class AddDialogView extends View
 

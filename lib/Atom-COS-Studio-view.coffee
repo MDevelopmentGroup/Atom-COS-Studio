@@ -3,7 +3,7 @@ url = require 'url'
 path=require 'path'
 fs= require 'fsplus' # JSON fsplus
 fsp= require 'fs-plus'
-StudioAPI= require 'StudioAPI'
+StudioAPI= require './studio-api/studio-api'
 SelectNameSpaceView=require './view/select-namespace-view'
 Tree=require './tree-view/tree'
 TreeView=require './tree-view/tree-view'
@@ -44,7 +44,7 @@ class AtomCOSStudioView extends View
         return new DocumaticView(uriToOpen)
     @toolbarView=new ToolbarView()
     #@loadPlugins(@toolbarView)
-    workSpacePanelView=new WorkSpacePanelView [{title:'Project'},{title:'NameSpace'}]
+    workSpacePanelView=new WorkSpacePanelView() # [{title:'Project'},{title:'NameSpace'}]
   serialize: ->
   destroy: ->
     @detach()
@@ -147,6 +147,8 @@ class AtomCOSStudioView extends View
     BrowserWindow = require('remote').require 'browser-window'
     mainWindow = new BrowserWindow({width: 800, height: 600, frame: true, 'skip-taskbar':true, 'auto-hide-menu-bar':true });
     mainWindow.loadUrl(atom.config.get('Atom-COS-Studio.UrlToConnect')+'csp/sys/webterminal/index.csp')
+    #http://localhost:57772/csp/sys/webterminal/index.csp
+    console.log(atom.config.get('Atom-COS-Studio.UrlToConnect')+'csp/sys/webterminal/index.csp')
     mainWindow.show()
   output: ->
     if @outputView instanceof OutputView

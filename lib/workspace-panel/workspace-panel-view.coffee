@@ -1,27 +1,48 @@
 {View, $$$,$} = require 'atom'
-TreeView=require '../tree-view0/tree-view1'
+RemoteTreeView=require '../remote-tree-view/tree-view'
+TreeView=require '../tree-view/tree-view'
+Tree=require '../tree-view/tree'
 module.exports =
 class WorkSpacePanelView extends View
 
   @content: ->
-    @div id:'pane', '', =>
-      @div class: 'workspace-panel-view native-key-bindings ', tabindex: -1, =>
-        @ul tabindex:-1, class:'list-inline tab-bar insertpanel',id:'TabMenu1', outlet:'TabMenu'
-        @div outlet:'BodyHTML'
+    @div class: 'workspace-panel-view tool-panel native-key-bindings ', tabindex: -1, =>
+      @ul tabindex:-1, class:'list-inline tab-bar insertpanel',id:'TabMenu1', outlet:'TabMenu'
+      @div style:'height:100%', outlet:'BodyHTML', =>
 
-  initialize: (items)->
+        @div style:'height:93%', id:'ScopeTree', outlet:'ScopeTree'
+        @div '',id:'ProjectTree', outlet:'ProjectTree'
+        @div '',id:'ProjectsTree', outlet:'ProjectsTree'
+      @div style:'height:50px', ''
+
+  initialize: (items=[])->
+    items=[{title:'Project'},{title:'Projects'},{title:'Scope'}]
     @setTabMenuItems(items)
+
     if not @hasParent()
       atom.workspaceView.prependToLeft(this)
       @bind(this)
-    @treeView =new TreeView('MDG-DEV')
-    @BodyHTML.html @treeView
+
+    remoteScopeTreeView =new RemoteTreeView({NS:'MDG-DEV', Type:'scope'})
+    @ScopeTree.html remoteScopeTreeView
+    remoteProjectsTreeView =new RemoteTreeView({NS:'MDG-DEV', Type:'project'})
+    @ProjectsTree.html remoteProjectsTreeView
+
+
+
+    @treeView =new TreeView()
+    atom.project.setPath("C:/AtomTemp/MDG-DEV/Default_ultra")
+    #console.log @treeView
+
+    @ProjectTree.html @treeView
+    @treeView.toggle()
+
   serialize: ->
   viewForItem: (item) ->
     out=$$$ ->
       @li class:'tab sortable', id:"#{item.title}", =>
         @div class:"title #{item.icon}", " #{item.title}"
-        @div class:'close-icon'
+        #@div class:'close-icon'
     out
   setTabMenuItem: (item) ->
     @TabMenu.append @viewForItem item
@@ -37,8 +58,15 @@ class WorkSpacePanelView extends View
   setbodyItem: () ->
   setActive: (name) ->
     $('.active')?.removeClass("active")
-    item=$(this).find("##{name}")
-    item?.addClass('active')
+    itemMenu=$(this).find("##{name}")
+    itemMenu?.addClass('active')
+    for item in @BodyHTML[0].children
+      if $(item)[0].id=="#{name}Tree"
+        $(item).removeClass('hide')
+      else
+        $(item).addClass('hide')
+    #itemBody=$(this).find("##{name}Tree")
+    #itemBody?.removeClass("hide").addClass('show')
   bind: (class1) ->
     $("#TabMenu1 li").click ->
       name= $(this).attr('id')

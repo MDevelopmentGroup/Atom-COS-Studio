@@ -1,6 +1,6 @@
 path = require 'path'
 shell = require 'shell'
-StudioAPI= require 'StudioAPI'
+StudioAPI= require '../studio-api/studio-api'
 _ = require 'underscore-plus'
 {$, BufferedProcess, ScrollView} = require 'atom'
 fs = require 'fs-plus'
