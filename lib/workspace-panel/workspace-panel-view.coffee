@@ -23,9 +23,9 @@ class WorkSpacePanelView extends View
       atom.workspaceView.prependToLeft(this)
       @bind(this)
 
-    remoteScopeTreeView =new RemoteTreeView({NS:'MDG-DEV', Type:'scope'})
+    remoteScopeTreeView =new RemoteTreeView({NS:'SAMPLES', Type:'scope', defProject:'Default_ultra'})
     @ScopeTree.html remoteScopeTreeView
-    remoteProjectsTreeView =new RemoteTreeView({NS:'MDG-DEV', Type:'project'})
+    remoteProjectsTreeView =new RemoteTreeView({NS:'SAMPLES', Type:'project', defProject:'Default_ultra'})
     @ProjectsTree.html remoteProjectsTreeView
 
 

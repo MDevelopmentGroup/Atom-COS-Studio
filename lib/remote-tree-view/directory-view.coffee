@@ -9,6 +9,7 @@ class DirectoryView extends View
   collapsed:true
   SubPackage:''
   Type:''
+  defProject:''
   @content: ->
     @li class: 'directory entry list-nested-item collapsed', =>
       @div outlet: 'header', class: 'header list-item', =>
@@ -18,6 +19,7 @@ class DirectoryView extends View
   initialize: (Param={}) ->
     @studioAPI=new StudioAPI(atom.config.get('Atom-COS-Studio.UrlToConnect'))
     @NS=Param.NS
+    @defProject=Param.defProject
     @SubPackage=Param.SubPackage
     @Type=Param.Type
     if Param.isRoot
@@ -36,14 +38,20 @@ class DirectoryView extends View
 
   show: ->
     @studioAPI.tree @Type, @NS, @SubPackage, (children) =>
-      #childrens=children.ClassList
-      @Viewchildrens(children.children)
+
+      sort=(a, b)->
+        if (a.DisplayName < b.DisplayName)
+          return -1
+        if (a.DisplayName > b.DisplayName)
+          return 1
+        return 0
+      @Viewchildrens(children.children.sort(sort))
   Viewchildrens:(childrens) ->
     for item in childrens
       if item.isFolder
-        ex=new DirectoryView({isRoot:false, Type:@Type, NS:@NS, name:item.DisplayName, SubPackage:item.Name})
+        ex=new DirectoryView({isRoot:false, Type:@Type, NS:@NS, name:item.DisplayName, SubPackage:item.Name, defProject:@defProject})
       else
-        ex=new FileView(item)
+        ex=new FileView(item, @defProject, @NS)
       @entries.append(ex)
   bind: ->
     ##$("li").click ->

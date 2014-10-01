@@ -1,39 +1,64 @@
 {View, EditorView, Workspace} = require 'atom'
-
+StudioAPI= require '../studio-api/studio-api'
+fs= require 'fsplus' # JSON fsplus
+fsp= require 'fs-plus'
 module.exports =
 class FileView extends View
+  namespace:''
+  name:''
+  defProject:''
+  relativePath:''
+  path:''
+  TempDir:''
+  Target:''
   @content: ->
     @li class: 'file entry list-item', =>
       @span class: 'name icon', outlet: 'fileName'
 
-  initialize: (@file={}) ->
-    #atom.workspaceView.command 'core:save', => @save()
+  initialize: (@file={},defProject,namespace,WebAPP) ->
+    @studioAPI=new StudioAPI(atom.config.get('Atom-COS-Studio.UrlToConnect'))
+    @TempDir=atom.config.get('Atom-COS-Studio.TempDir')
     @fileName.text(@file.DisplayName)
-
-    relativeFilePath = atom.project.relativize(@file.path)
-    #@fileName.attr('data-name', @file.name)
-    #@fileName.attr('data-path', relativeFilePath)
-
-    #if @file.symlink
     @fileName.addClass('icon-file-text')
-    ###else
-      switch @file.type
-        when 'binary'     then @fileName.addClass('icon-file-binary')
-        when 'compressed' then @fileName.addClass('icon-file-zip')
-        when 'image'      then @fileName.addClass('icon-file-media')
-        when 'pdf'        then @fileName.addClass('icon-file-pdf')
-        when 'readme'     then @fileName.addClass('icon-book')
-        when 'text'       then @fileName.addClass('icon-file-text')
+    @defProject=defProject
+    @namespace=namespace
+    @name=@file.Name
+    @Target=@file.Target
+    @relativePath=@file.relativePath
 
-    @subscribe @file.$status.onValue (status) =>
-      @removeClass('status-ignored status-modified status-added')
-      @addClass("status-#{status}") if status?###
-    @on 'click', => alert @file.Name, @file.DisplayName
+    @on 'click', => @check()
   getPath: ->
     @file.path
 
   #beforeRemove: ->
     #@file.destroy()
-  write: (text) ->
+  fsExist: ->
+    fs.existsSync "#{@TempDir} #{@namespace}/#{@defProject}/#{@relativePath}"
+  open: ->
+    atom.workspaceView.open(@path, split: 'left', searchAllPanes: true)
+  check: ->
+    @studioAPI.ItemExist 'project', @namespace, @defProject, @name, (result) =>
+      if result.Status
+        if @fsExist()
+          @open()
+        else
+          @pDownload (result) =>
+            @open()
+      else
+        @sDownload (result) =>
+          @open()
 
-  save:->
+  pDownload : (result) ->
+    @path="#{@TempDir} #{@namespace}/#{@defProject}/#{@relativePath}"
+    @write (st) =>
+      result('')
+
+  sDownload : (result) ->
+    @path="#{@TempDir}#{@namespace}/#{@relativePath}"
+    @write (st) =>
+      result('')
+  write:(st) ->
+    @studioAPI.source @Target, @namespace, @name, (result) =>
+      console.log @path
+      fsp.writeFile @path, result.Source , (status) =>
+        st('')
