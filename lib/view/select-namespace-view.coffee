@@ -16,6 +16,7 @@ class SelectNameSpaceView extends View
           @ol class: 'list-group', outlet : 'listName', =>
         @div outlet: 'Select'
         @div class: 'block', =>
+          @input type:'text', class:'editor mini editor-colors native-key-bindings'
           @div class: 'btn-group', =>
             @button "OK", outlet:'OKButton', class:'btn'
             @button "Cancel", outlet:'CancelButton', class:'btn'

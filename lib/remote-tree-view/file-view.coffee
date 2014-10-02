@@ -2,6 +2,7 @@
 StudioAPI= require '../studio-api/studio-api'
 fs= require 'fsplus' # JSON fsplus
 fsp= require 'fs-plus'
+http = require 'http'
 module.exports =
 class FileView extends View
   namespace:''
@@ -58,7 +59,21 @@ class FileView extends View
     @write (st) =>
       result('')
   write:(st) ->
-    @studioAPI.source @Target, @namespace, @name, (result) =>
-      console.log @path
-      fsp.writeFile @path, result.Source , (status) =>
-        st('')
+
+    @studioAPI.source @Target, @namespace, @name, (response) =>
+      fsp.writeFile @path, '' , (status) =>
+        file = fsp.createWriteStream(@path)
+        response.pipe(file)
+        st()
+
+      #file = fs.createWriteStream(@path)
+      #response.pipe(file)
+      #st('')
+    #  console.log @path
+      #fsp.writeFile @path, result.Source , (status) =>
+
+  ###  request = http.get "http://localhost:57772/mdg-dev/source/csp?NameSpace=SAMPLES&Name="+@name , (response) =>
+      console.log response
+      file = fs.createWriteStream(@path)
+      response.pipe(file)
+      st('') ###

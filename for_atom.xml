@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2014.2 (Build 315U)" ts="2014-10-01 19:06:10">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2014.2 (Build 315U)" ts="2014-10-02 18:05:17">
 <CSP name="Test/Test2/Untitled1.CSP" application="/csp/mdg-dev/" default="1"><![CDATA[
 <html>
 <head>
@@ -36,30 +36,30 @@
 ]]></CSP>
 
 
-<Project name="Atom-Studio" LastModified="2014-10-01 19:05:58.171828">
+<Project name="Atom-Studio" LastModified="2014-10-02 18:04:55.029501">
   <Items>
     <ProjectItem name="MDG" type="PKG"></ProjectItem>
     <ProjectItem name="Studio" type="PKG"></ProjectItem>
+    <ProjectItem name="Untitled1.INT" type="MAC"></ProjectItem>
     <ProjectItem name="Untitled1.MAC" type="MAC"></ProjectItem>
     <ProjectItem name="Untitled12.BAS" type="MAC"></ProjectItem>
     <ProjectItem name="Untitled123.MVB" type="MVB"></ProjectItem>
     <ProjectItem name="Untitled2.INC" type="MAC"></ProjectItem>
     <ProjectItem name="Untitled3.INT" type="MAC"></ProjectItem>
+    <ProjectItem name="Untitled5" type="PKG"></ProjectItem>
     <ProjectItem name="Untitled5.Test.INT" type="MAC"></ProjectItem>
+    <ProjectItem name="Untitled6" type="PKG"></ProjectItem>
     <ProjectItem name="Untitled6.Test.2.INC" type="MAC"></ProjectItem>
+    <ProjectItem name="Untitled7" type="PKG"></ProjectItem>
     <ProjectItem name="Untitled7.Test.w.INC" type="MAC"></ProjectItem>
+    <ProjectItem name="Untitled8" type="PKG"></ProjectItem>
     <ProjectItem name="Untitled8.3.Test.INC" type="MAC"></ProjectItem>
     <ProjectItem name="WEB" type="PKG"></ProjectItem>
-    <ProjectItem name="sc" type="PKG"></ProjectItem>
     <ProjectItem name="csp" type="PKG"></ProjectItem>
-    <ProjectItem name="Untitled5" type="PKG"></ProjectItem>
-    <ProjectItem name="Untitled6" type="PKG"></ProjectItem>
-    <ProjectItem name="Untitled7" type="PKG"></ProjectItem>
-    <ProjectItem name="Untitled8" type="PKG"></ProjectItem>
-    <ProjectItem name="Untitled1.INT" type="MAC"></ProjectItem>
     <ProjectItem name="csp/mdg-dev" type="DIR"></ProjectItem>
     <ProjectItem name="csp/mdg-dev/Test" type="DIR"></ProjectItem>
     <ProjectItem name="mdg-dev" type="DIR"></ProjectItem>
+    <ProjectItem name="sc" type="PKG"></ProjectItem>
   </Items>
 </Project>
 
@@ -764,6 +764,33 @@ Cоздание класса</Description>
 </Class>
 
 
+<Class name="Studio.Remote.File">
+<Super>%RegisteredObject</Super>
+<TimeChanged>63462,43545.610829</TimeChanged>
+<TimeCreated>63462,41191.041104</TimeCreated>
+
+<Property name="ContentType">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Content">
+<Type>%Stream.FileBinary</Type>
+<Required>1</Required>
+</Property>
+
+<Method name="Write">
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st as %Status=$$$OK
+	do %response.SetHeader("Content-Type","application/"_..ContentType)
+	do ..Content.OutputToDevice()
+	Quit st
+]]></Implementation>
+</Method>
+</Class>
+
+
 <Class name="Studio.Remote.ProjectView">
 <Super>%RegisteredObject</Super>
 <TimeChanged>63461,48560.861331</TimeChanged>
@@ -854,7 +881,7 @@ Cоздание класса</Description>
 
 <Class name="Studio.Remote.Source">
 <Super>%RegisteredObject</Super>
-<TimeChanged>63461,68615.924362</TimeChanged>
+<TimeChanged>63462,64905.223306</TimeChanged>
 <TimeCreated>63460,39899.380483</TimeCreated>
 
 <Method name="GetClass">
@@ -866,17 +893,14 @@ Cоздание класса</Description>
 	
 	s NameSpace=%request.Get("NameSpace","")
 	s Name=%request.Get("Name","")
-	s pObject=##class(%ZEN.proxyObject).%New()
 	try {
 		if (NameSpace'="")&&(Name'=""){
-			s st=##class(%Compiler.UDL.TextServices).GetTextAsStream(NameSpace,Name,.tStream)
-			s pObject.Source=tStream.Read(tStream.Size)
-			s pObject.Status=st
+			s st=##class(%Compiler.UDL.TextServices).GetTextAsStream(NameSpace,Name,.tStream)	
+			set rFile=##class(Studio.Remote.File).%New()
+        	do rFile.Content.CopyFrom(tStream)
+        	set rFile.ContentType="CLS"
+        	do rFile.Write()
 		}
-		else{
-			s pObject.Status="Class does not exist"
-		}
-		s st=pObject.%ToJSON()
 	}
     catch (e) {
         set st=e.AsStatus()
@@ -892,21 +916,17 @@ Cоздание класса</Description>
 	#dim st As %Status=$$$OK
 	s NameSpace=%request.Get("NameSpace","")
 	s Name=%request.Get("Name","")
-	s pObject=##class(%ZEN.proxyObject).%New()
 	try {
 		if (NameSpace'="")&&(Name'=""){
 			s ns=$namespace
 			s $namespace=NameSpace
         	s temp=##class(%Routine).%OpenId(Name)
-        	s pObject.Source=##class(%Stream.TmpCharacter).%New()
-        	d pObject.Source.CopyFrom(temp)
-        	s pObject.Status=1
         	s $namespace=ns
+        	set rFile=##class(Studio.Remote.File).%New()
+        	do rFile.Content.CopyFrom(temp)
+        	set rFile.ContentType=temp.RoutineType 
+        	do rFile.Write()
 		}
-		else{
-			s pObject.Status="Routine does not exist"
-		}
-		s st=pObject.%ToJSON()
 	}
     catch (e) {
         set st=e.AsStatus()
@@ -922,33 +942,55 @@ Cоздание класса</Description>
 	#dim st As %Status=$$$OK
 	s NameSpace=%request.Get("NameSpace","")
 	s Name=%request.Get("Name","")
-	s ns=$namespace
-	s $namespace="%SYS"
-	s pObject=##class(%ZEN.proxyObject).%New()
+
 	try {
 		if (NameSpace'="")&&(Name'=""){
 			S WebAPP=$LIST($LISTFROMSTRING(Name,"|"),1)
 			S Target=$LIST($LISTFROMSTRING(Name,"|"),2)
+			s ns=$namespace
+			s $namespace="%SYS"
 			k csp s csp = ##class(Security.Applications).Get(WebAPP,.csp)
 			s Path=$g(csp("Path"))
-			//w Path_Target,!
+			s $namespace=ns
+
 			s temp=##class(%Stream.FileBinary).%New()		
 			s temp.Filename=$E(Path_Target,1,*-1)
-        	s pObject.Source=##class(%Stream.TmpCharacter).%New()
-        	d pObject.Source.CopyFrom(temp)
-        	s pObject.Status=1
+        	set rFile=##class(Studio.Remote.File).%New()
+        	do rFile.Content.CopyFrom(temp)
+        	set rFile.ContentType=$LIST($LISTFROMSTRING(temp.Id,"."),*,*)
+        	do rFile.Write()
+        	
 
-		}
-		else{
-			s pObject.Status="Routine does not exist"
-		}
-		s st=pObject.%ToJSON()
-	}
+		}	
+	} 
     catch (e) {
         set st=e.AsStatus()
     }
-    s $namespace=ns
+
     Q st
+]]></Implementation>
+</Method>
+
+<Method name="GetOther">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st as %Status=$$$OK
+	s NameSpace=%request.Get("NameSpace","")
+	s Name=%request.Get("Name","")
+	
+	set rFile=##class(Studio.Remote.File).%New()
+    
+    set rFile.ContentType="DFI"
+    
+	s ns=$namespace
+	s $namespace=NameSpace
+	s temp=##class(%Stream.FileBinary).%New()
+	do ##class(%DeepSee.UserLibrary.Utils).%Export(Name,temp)
+	s $namespace=ns
+	do rFile.Content.CopyFrom(temp)
+	do rFile.Write()
+	Quit st
 ]]></Implementation>
 </Method>
 </Class>
@@ -956,7 +998,7 @@ Cоздание класса</Description>
 
 <Class name="Studio.Remote.TreeView">
 <Super>%RegisteredObject</Super>
-<TimeChanged>63461,67841.351374</TimeChanged>
+<TimeChanged>63462,59810.368554</TimeChanged>
 <TimeCreated>63460,39714.568818</TimeCreated>
 
 <Method name="GetClasses">
@@ -1170,8 +1212,9 @@ Cоздание класса</Description>
 	set SubPackage=%request.Get("SubPackage","")
 	s ns=$namespace
 	s $namespace=NameSpace
-	s pivot="SELECT * FROM %DeepSee_Dashboard.Pivot"
-	s dashboard="SELECT * FROM %DeepSee_Dashboard.Definition"
+	//s pivot="SELECT * FROM %DeepSee_Dashboard.Pivot"
+	//s dashboard="SELECT * FROM %DeepSee_Dashboard.Definition"
+	s dashboard="select * from %DeepSee_UserLibrary.FolderItem"
 	
 
 	s pObject=##class(%ZEN.proxyObject).%New()
@@ -1186,14 +1229,14 @@ Cоздание класса</Description>
 	while res.%Next() {
 		s pObj=##class(%ZEN.proxyObject).%New()
 		s pObj.DisplayName=res.%Get("documentName")
-		s pObj.Name=res.%Get("documentName")
+		s pObj.Name=res.%Get("fullName")
 		s pObj.isFolder=0
 		s pObj.relativePath="Other/"_res.%Get("documentName")
 		s pObj.Target="other"
 		d pObject.children.Insert(pObj)
 
 	}
-	
+	/*
 	s st=sttm.%Prepare(pivot)
 	s res=sttm.%Execute()
 	while res.%Next() {
@@ -1204,7 +1247,7 @@ Cоздание класса</Description>
 		s pObj.relativePath="Other/"_res.%Get("documentName")
 		s pObj.Target="other"
 		d pObject.children.Insert(pObj)
-	}
+	}*/
 	d pObject.%ToJSON() 	
 	s $namespace=ns
 	q 1
@@ -1253,7 +1296,7 @@ Cоздание класса</Description>
 
 <Class name="WEB.Broker">
 <Super>%CSP.REST</Super>
-<TimeChanged>63461,56414.915553</TimeChanged>
+<TimeChanged>63462,59880.217314</TimeChanged>
 <TimeCreated>63440,61672.437524</TimeCreated>
 
 <XData name="UrlMap">
@@ -1286,6 +1329,7 @@ Cоздание класса</Description>
     <Route Url="/source/class" Method="GET" Call="Studio.Remote.Source:GetClass"/>
     <Route Url="/source/routine" Method="GET" Call="Studio.Remote.Source:GetRoutine"/>
     <Route Url="/source/csp" Method="GET" Call="Studio.Remote.Source:GetCSP"/>
+    <Route Url="/source/other" Method="GET" Call="Studio.Remote.Source:GetOther"/>
     
 </Routes>
 ]]></Data>
