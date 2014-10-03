@@ -36,7 +36,11 @@ class FileView extends View
   fsExist: ->
     fs.existsSync "#{@TempDir} #{@namespace}/#{@defProject}/#{@relativePath}"
   open: ->
-    atom.workspaceView.open(@path, split: 'left', searchAllPanes: true)
+    atom.workspaceView.open(@path, split: 'left', searchAllPanes: true).done (editorView) ->
+      #if editorView instanceof EditorView
+      editorView.Parampapam={Test:'ttt'}
+      console.log editorView
+
   check: ->
     @studioAPI.ItemExist 'project', @namespace, @defProject, @name, (result) =>
       if result.Status

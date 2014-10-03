@@ -22,6 +22,9 @@ class ConfigView extends View
     @TempDir.getEditor().setText(atom.config.get('Atom-COS-Studio.TempDir'))
     @OKButton.on 'click', => @set()
     @CancelButton.on 'click', => @detach()
+    @TempDir.on 'click', =>
+      dir=require('remote').require('dialog').showOpenDialog({defaultPath: 'C:/', properties: ['openFile', 'openDirectory']})
+      @TempDir.getEditor().setText(dir+"\\") if dir?
   serialize: ->
   destroy: ->
     @detach()

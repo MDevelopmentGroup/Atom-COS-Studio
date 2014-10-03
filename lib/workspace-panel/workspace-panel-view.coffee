@@ -31,7 +31,7 @@ class WorkSpacePanelView extends View
 
 
     @treeView =new TreeView()
-    atom.project.setPath("C:/AtomTemp/MDG-DEV/Default_ultra")
+    atom.project.setPath("C:/AtomTemp/SAMPLES")
     #console.log @treeView
 
     @ProjectTree.html @treeView

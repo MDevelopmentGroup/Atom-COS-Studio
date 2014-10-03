@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2014.2 (Build 315U)" ts="2014-10-02 18:05:17">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2014.2 (Build 315U)" ts="2014-10-03 17:23:10">
 <CSP name="Test/Test2/Untitled1.CSP" application="/csp/mdg-dev/" default="1"><![CDATA[
 <html>
 <head>
@@ -881,8 +881,14 @@ Cоздание класса</Description>
 
 <Class name="Studio.Remote.Source">
 <Super>%RegisteredObject</Super>
-<TimeChanged>63462,64905.223306</TimeChanged>
+<TimeChanged>63463,6665.563233</TimeChanged>
 <TimeCreated>63460,39899.380483</TimeCreated>
+
+<Parameter name="Replace">
+<Description><![CDATA[
+Replace "%" -> "@"]]></Description>
+<Default>@</Default>
+</Parameter>
 
 <Method name="GetClass">
 <ClassMethod>1</ClassMethod>
@@ -893,6 +899,9 @@ Cоздание класса</Description>
 	
 	s NameSpace=%request.Get("NameSpace","")
 	s Name=%request.Get("Name","")
+	if ($E(Name,1)=..#Replace){
+		set Name=$REPLACE(Name,..#Replace,"%",1,1)
+	}
 	try {
 		if (NameSpace'="")&&(Name'=""){
 			s st=##class(%Compiler.UDL.TextServices).GetTextAsStream(NameSpace,Name,.tStream)	
@@ -998,10 +1007,75 @@ Cоздание класса</Description>
 
 <Class name="Studio.Remote.TreeView">
 <Super>%RegisteredObject</Super>
-<TimeChanged>63462,59810.368554</TimeChanged>
+<TimeChanged>63463,54198.190775</TimeChanged>
 <TimeCreated>63460,39714.568818</TimeCreated>
 
+<Parameter name="Replace">
+<Description><![CDATA[
+Replace "%" -> "@"]]></Description>
+<Default>@</Default>
+</Parameter>
+
 <Method name="GetClasses">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set namespace=%request.Get("NameSpace","")
+	set SubPackage=%request.Get("SubPackage","")
+	#dim lenSubPackage=0
+	s ns=$namespace
+	s $namespace=namespace
+	set pObject=##class(%ZEN.proxyObject).%New()
+	set pObject.children=##class(%ListOfDataTypes).%New()
+	set sql="SELECT * FROM %Dictionary.ClassDefinition " 
+	if SubPackage'="" {
+		if ($E(SubPackage,1)=..#Replace){
+			set SubPackage=$REPLACE(SubPackage,..#Replace,"%",1,1)
+		}
+		set lenSubPackage=$LL($LISTFROMSTRING(SubPackage,"."))
+		set sql=sql_"where ID %STARTSWITH '"_SubPackage_".'"
+	} 
+
+	set sttm=##class(%SQL.Statement).%New()
+	set sttm.%ObjectSelectMode=1
+	set st=sttm.%Prepare(sql)
+	set res=sttm.%Execute()
+	set tList=""
+	
+	while res.%Next(){
+		s tObj=##class(%ZEN.proxyObject).%New()
+		s tlName=$LISTFROMSTRING(res.%Get("Name"),".")
+		
+		if (($LL(tlName)-lenSubPackage)>1){
+			s tST=1	
+		 	s sp=$LISTTOSTRING($LIST(tlName,1,lenSubPackage+1),".")
+		 	if $LF(tList,sp)'=0{
+			 	s tST=0
+			}	 	
+		 	if tST {
+			s tObj.isFolder=1
+			s tObj.DisplayName=$LISTTOSTRING($LIST(tlName,lenSubPackage+1,lenSubPackage+1),".")
+			s tObj.Name=$REPLACE($LISTTOSTRING($LIST(tlName,1,lenSubPackage+1),"."),"%",..#Replace,1,1)
+			do pObject.children.Insert(tObj)
+			s $LIST(tList,$LL(tList)+1)=sp  
+			}
+		}
+		else{
+			s tObj.isFolder=0
+			s tObj.DisplayName=$LISTTOSTRING($LIST(tlName,lenSubPackage+1,*),".")
+			s tObj.Name=$REPLACE(res.%Get("Name"),"%",..#Replace,1,1)
+			s tObj.relativePath="Class/"_$REPLACE(res.%Get("Name"),".","/")_".CLS"
+			s tObj.Target="class"
+			do pObject.children.Insert(tObj)
+		}
+	}
+	do pObject.%ToJSON()
+	s $namespace= ns
+	q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="GetClasses1">
 <ClassMethod>1</ClassMethod>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
@@ -1192,7 +1266,7 @@ Cоздание класса</Description>
 			else{
 			s tObj.isFolder=0
 
-			s tObj.relativePath="CSP/"_$E(result.Get("Name"),$length(Path_Target)+1,*)
+			s tObj.relativePath="CSP/"_$REPLACE($E(result.Get("Name"),$length(Path)+1,*),"\","/") //$E(result.Get("Name"),$length(Path_Target)+1,*)
 			s tObj.Target="csp"
 			}
 			s st=pObject.children.Insert(tObj)
@@ -1296,7 +1370,7 @@ Cоздание класса</Description>
 
 <Class name="WEB.Broker">
 <Super>%CSP.REST</Super>
-<TimeChanged>63462,59880.217314</TimeChanged>
+<TimeChanged>63462,84275.576058</TimeChanged>
 <TimeCreated>63440,61672.437524</TimeCreated>
 
 <XData name="UrlMap">
@@ -1330,6 +1404,8 @@ Cоздание класса</Description>
     <Route Url="/source/routine" Method="GET" Call="Studio.Remote.Source:GetRoutine"/>
     <Route Url="/source/csp" Method="GET" Call="Studio.Remote.Source:GetCSP"/>
     <Route Url="/source/other" Method="GET" Call="Studio.Remote.Source:GetOther"/>
+    
+    <Route Url="/get" Method="GET" Call="Studio.Remote.TreeView:Get"/>
     
 </Routes>
 ]]></Data>

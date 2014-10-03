@@ -109,6 +109,8 @@ class AtomCOSStudioView extends View
   save: ->
     if atom.workspace.getActiveEditor()?
       editor=atom.workspace.getActiveEditor()
+      console.log editor
+      console.log editor.getPath()
       if @getProperties().type=='cls'
         @studioAPI.updateclass {namespace:@NameSpace,nameClass:@getProperties().name,text:editor.getText(),TempDir:atom.config.get('Atom-COS-Studio.TempDir')}, (status) =>
           @Output().save(status, status, @getProperties().file)
