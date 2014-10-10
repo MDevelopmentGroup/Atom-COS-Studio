@@ -25,6 +25,7 @@ class AtomCOSStudioView extends View
   @addClassView:null
   @Config:null
   @NameSpace:null
+  workSpacePanelView:null
   @content: ->
     @div ''
   initialize: (serializeState) ->
@@ -44,7 +45,7 @@ class AtomCOSStudioView extends View
         return new DocumaticView(uriToOpen)
     @toolbarView=new ToolbarView()
     #@loadPlugins(@toolbarView)
-    workSpacePanelView=new WorkSpacePanelView() # [{title:'Project'},{title:'NameSpace'}]
+
   serialize: ->
   destroy: ->
     @detach()
@@ -100,11 +101,16 @@ class AtomCOSStudioView extends View
       return @outputView
   namespace: ->
     selectNameSpaceView=new SelectNameSpaceView()
-    selectNameSpaceView.success (namespace) =>
+    selectNameSpaceView.success (namespace,project) =>
       @NameSpace=namespace
-      @studioAPI.getpath {NameSpace:namespace,TempDir:atom.config.get('Atom-COS-Studio.TempDir') }, (fullpath) =>
+      ###@studioAPI.getpath {NameSpace:namespace,TempDir:atom.config.get('Atom-COS-Studio.TempDir') }, (fullpath) =>
         atom.project.setPath(fullpath.Path)
-        @treeView.toggle()
+        @treeView.toggle() ###
+      if @workSpacePanelView==null
+        @workSpacePanelView=new WorkSpacePanelView({NS:namespace,PRJ:project})
+      else
+        @workSpacePanelView.detach()
+        @workSpacePanelView=new WorkSpacePanelView({NS:namespace,PRJ:project})
       selectNameSpaceView.detach()
   save: ->
     if atom.workspace.getActiveEditor()?

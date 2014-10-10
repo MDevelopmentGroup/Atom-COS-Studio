@@ -2,9 +2,10 @@
 RemoteTreeView=require '../remote-tree-view/tree-view'
 TreeView=require '../tree-view/tree-view'
 Tree=require '../tree-view/tree'
+fsp= require 'fs-plus'
 module.exports =
 class WorkSpacePanelView extends View
-
+  TempDir:''
   @content: ->
     @div class: 'workspace-panel-view tool-panel native-key-bindings ', tabindex: -1, =>
       @ul tabindex:-1, class:'list-inline tab-bar insertpanel',id:'TabMenu1', outlet:'TabMenu'
@@ -15,26 +16,24 @@ class WorkSpacePanelView extends View
         @div '',id:'ProjectsTree', outlet:'ProjectsTree'
       @div style:'height:50px', ''
 
-  initialize: (items=[])->
-    items=[{title:'Project'},{title:'Projects'},{title:'Scope'}]
+  initialize: (Param={})->
+    items=[{title:'Project'},{title:'Scope'}]
     @setTabMenuItems(items)
-
+    @TempDir=atom.config.get('Atom-COS-Studio.TempDir')
     if not @hasParent()
       atom.workspaceView.prependToLeft(this)
       @bind(this)
 
-    remoteScopeTreeView =new RemoteTreeView({NS:'SAMPLES', Type:'scope', defProject:'Default_ultra'})
+    remoteScopeTreeView =new RemoteTreeView({NS:Param.NS, Type:'scope', defProject:Param.PRJ})
     @ScopeTree.html remoteScopeTreeView
-    remoteProjectsTreeView =new RemoteTreeView({NS:'SAMPLES', Type:'project', defProject:'Default_ultra'})
-    @ProjectsTree.html remoteProjectsTreeView
-
-
 
     @treeView =new TreeView()
-    atom.project.setPath("C:/AtomTemp/SAMPLES")
-    #console.log @treeView
-    @ProjectTree.html @treeView
-    @treeView.toggle()
+    @Path="#{@TempDir}#{Param.NS}\\#{Param.PRJ}"
+    fsp.mkdir @Path, (e) =>
+      atom.project.setPath(@Path)
+      @ProjectTree.html @treeView
+      @treeView.toggle()
+
 
   serialize: ->
   viewForItem: (item) ->

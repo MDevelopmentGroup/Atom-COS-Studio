@@ -23,7 +23,7 @@ class TreeView extends ScrollView
       ClassView = new DirectoryView({isRoot:true,Type:'classes',name:"Class",NS:Param.NS,SubPackage:'', isExpanded: true, defProject:@defProject})
       RoutineView = new DirectoryView({isRoot:true,Type:'routines',name:"Routine",NS:Param.NS,SubPackage:'', isExpanded: true, defProject:@defProject})
       CSPView = new DirectoryView({isRoot:true,Type:'csp',name:"CSP",NS:Param.NS,SubPackage:'', isExpanded: true, defProject:@defProject})
-      OtherView = new DirectoryView({isRoot:true,Type:'other',name:"Other",NS:'SAMPLES',SubPackage:'', isExpanded: true, defProject:@defProject})
+      OtherView = new DirectoryView({isRoot:true,Type:'other',name:"Other",NS:Param.NS,SubPackage:'', isExpanded: true, defProject:@defProject})
       @list.append(ClassView)
       @list.append(RoutineView)
       @list.append(CSPView)

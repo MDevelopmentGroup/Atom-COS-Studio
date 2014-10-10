@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2014.2 (Build 315U)" ts="2014-10-03 17:23:10">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2014.2 (Build 315U)" ts="2014-10-10 12:57:12">
 <CSP name="Test/Test2/Untitled1.CSP" application="/csp/mdg-dev/" default="1"><![CDATA[
 <html>
 <head>
@@ -36,9 +36,8 @@
 ]]></CSP>
 
 
-<Project name="Atom-Studio" LastModified="2014-10-02 18:04:55.029501">
+<Project name="Atom-Studio" LastModified="2014-10-10 12:56:25.549407">
   <Items>
-    <ProjectItem name="MDG" type="PKG"></ProjectItem>
     <ProjectItem name="Studio" type="PKG"></ProjectItem>
     <ProjectItem name="Untitled1.INT" type="MAC"></ProjectItem>
     <ProjectItem name="Untitled1.MAC" type="MAC"></ProjectItem>
@@ -55,11 +54,12 @@
     <ProjectItem name="Untitled8" type="PKG"></ProjectItem>
     <ProjectItem name="Untitled8.3.Test.INC" type="MAC"></ProjectItem>
     <ProjectItem name="WEB" type="PKG"></ProjectItem>
-    <ProjectItem name="csp" type="PKG"></ProjectItem>
     <ProjectItem name="csp/mdg-dev" type="DIR"></ProjectItem>
     <ProjectItem name="csp/mdg-dev/Test" type="DIR"></ProjectItem>
     <ProjectItem name="mdg-dev" type="DIR"></ProjectItem>
     <ProjectItem name="sc" type="PKG"></ProjectItem>
+    <ProjectItem name="csp" type="PKG"></ProjectItem>
+    <ProjectItem name="MDG" type="PKG"></ProjectItem>
   </Items>
 </Project>
 
@@ -708,6 +708,119 @@ Cоздание класса</Description>
 </Class>
 
 
+<Class name="Studio.File.Save">
+<Super>%RegisteredObject</Super>
+<TimeChanged>63464,67098.38076</TimeChanged>
+<TimeCreated>63464,58038.427053</TimeCreated>
+
+<Method name="Class">
+<Description>
+input Format
+{ children: [{Source:"", Name:"Example"}	...]}
+output (return) Format
+{ children: [{Status:"", Name:"Example", Time:""}	...]}</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	set pObject=##class(%ZEN.proxyObject).%New()
+	s pObject.children=##class(%ListOfDataTypes).%New()
+	try {
+		$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+		for index=1:1:obj.children.Size(){
+			#dim isExists,isSave As %Status=$$$OK
+			#dim sStatus As %String=""
+			set tClass=obj.children.GetAt(index)
+			set tObj=##class(%ZEN.proxyObject).%New()
+			set isExists=##class(%Dictionary.ClassDefinition).%ExistsId(tClass.Name)
+			if ('isExists){
+				set ns=$namespace
+				set $namespace=tClass.Namespace
+				set newClass = ##class(%Dictionary.ClassDefinition).%New(tClass.Name)
+    			set isSave = newClass.%Save()
+    			set $namespace=ns
+			}
+			if (isExists&&isSave){
+				set stream=##class(%Stream.FileBinary).%New()
+		    	set temp=$System.Encryption.Base64Decode($ZConvert(tClass.Source,"I","UTF8"))
+    			do stream.Write(temp)
+    			set sStatus= ##class(%Compiler.UDL.TextServices).SetTextFromStream(tClass.Namespace, tClass.Name, stream)
+    			if sStatus {set sStatus="Saved"}	
+			} 
+			set tObj.Name=tClass.Name
+			set tObj.Namespace=tClass.Namespace
+			set tObj.Status=sStatus
+			set tObj.Time=$ZDATETIME($H,4)  
+		  	do pObject.children.Insert(tObj)  
+		}
+	}
+    catch (e) {
+        set st=e.AsStatus()
+        set pObject.Error=st
+    }
+    do pObject.%ToJSON()
+	Quit st
+]]></Implementation>
+</Method>
+
+<Method name="Routine">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	set pObject=##class(%ZEN.proxyObject).%New()
+	s pObject.children=##class(%ListOfDataTypes).%New()
+	try {
+		$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+		for index=1:1:obj.children.Size(){
+			#dim isExists,isSave As %Status=$$$OK
+			#dim sStatus As %String=""
+			set tRoutine=obj.children.GetAt(index)
+			set tObj=##class(%ZEN.proxyObject).%New()
+			set ns=$namespace
+			set $namespace=tRoutine.Namespace
+			set isExists=##class(%Library.Routine).%ExistsId(tRoutine.Name)
+			if ('isExists){
+				set newRoutine = ##class(%Library.Routine).%New(tRoutine.Name)
+    			set isSave = newRoutine.%Save()
+			}
+			if (isExists&&isSave){
+		    	set temp=$System.Encryption.Base64Decode($ZConvert(tRoutine.Source,"I","UTF8"))
+    			set Routine=##class(%Library.Routine).%OpenId(tRoutine.Name)
+    			set st= Routine.Write(temp)
+    			set sStatus=Routine.%Save()
+    			set sStatus=Routine.Compile()
+    			if sStatus {set sStatus="Saved"}	
+			} 
+			set tObj.Name=tRoutine.Name
+			set tObj.Namespace=tRoutine.Namespace
+			set tObj.Status=sStatus
+			set tObj.Time=$ZDATETIME($H,4)
+			set $namespace=ns  
+		  	do pObject.children.Insert(tObj)  
+		}
+	}
+    catch (e) {
+        set st=e.AsStatus()
+        set pObject.Error=st
+    }
+    do pObject.%ToJSON()
+	Quit st
+]]></Implementation>
+</Method>
+
+<Method name="CSP">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+</Method>
+
+<Method name="Other">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+</Method>
+</Class>
+
+
 <Class name="Studio.FileView">
 <Super>%RegisteredObject</Super>
 <TimeChanged>63460,40127.092918</TimeChanged>
@@ -793,8 +906,32 @@ Cоздание класса</Description>
 
 <Class name="Studio.Remote.ProjectView">
 <Super>%RegisteredObject</Super>
-<TimeChanged>63461,48560.861331</TimeChanged>
+<TimeChanged>63469,77354.437786</TimeChanged>
 <TimeCreated>63460,51588.809551</TimeCreated>
+
+<Parameter name="Class">
+<Description>
+Display Name of Class - Class</Description>
+<Default>Class</Default>
+</Parameter>
+
+<Parameter name="Routine">
+<Description>
+Display Name of Routine - Routine</Description>
+<Default>Routine</Default>
+</Parameter>
+
+<Parameter name="CSP">
+<Description>
+Display Name of CSP - CSP</Description>
+<Default>CSP</Default>
+</Parameter>
+
+<Parameter name="Other">
+<Description>
+Display Name of Other - Other</Description>
+<Default>Other</Default>
+</Parameter>
 
 <Query name="Projects">
 <Type>%SQLQuery</Type>
@@ -818,30 +955,22 @@ Cоздание класса</Description>
 	s $namespace=NameSpace
 	s pObject=##class(%ZEN.proxyObject).%New()
 	s pObject.children=##class(%ListOfDataTypes).%New()
-	if SubPackage="" {
-		s res=##class(%ResultSet).%New("Studio.Remote.ProjectView:Projects")
-		s st= res.Execute()
-		while res.Next(){
-			s tObj=##class(%ZEN.proxyObject).%New()
-			s tObj.Name=res.Get("Name")
-			s tObj.DisplayName=res.Get("Name")
-			s tObj.isFolder=1
-			s tObj.LastModified=res.Get("LastModified")
-			s st= pObject.children.Insert(tObj)
-		}
+
+	s sql="SELECT * FROM %Studio.Project ORDER BY LastModified DESC"
+	s sttm=##class(%SQL.Statement).%New()
+	s sttm.%ObjectSelectMode=1
+	s st=sttm.%Prepare(sql)
+	s res=sttm.%Execute()
+	while res.%Next() {
+		s pObject.Count=res.%ROWCOUNT
+		s tObj=##class(%ZEN.proxyObject).%New()
+		s tObj.Name=res.%Get("Name")
+		s tObj.DisplayName=res.%Get("Name")
+		s tObj.isFolder=1
+		s tObj.LastModified=res.%Get("LastModified")
+		s st= pObject.children.Insert(tObj)
 	}
-	else{
-		s res=##class(%ResultSet).%New("Studio.Remote.ProjectView:ProjectItems")
-		s st= res.Execute(SubPackage)
-		while res.Next(){
-			s tObj=##class(%ZEN.proxyObject).%New()
-			s tObj.Name=res.Get("Name")
-			s tObj.DisplayName=res.Get("Name")
-			s tObj.isFolder=1
-			s tObj.LastModified=res.Get("LastModified")
-			s st= pObject.children.Insert(tObj)
-		}
-	}
+
 	s st=pObject.%ToJSON()
 	s $namespace=ns
 	q st
@@ -860,7 +989,11 @@ Cоздание класса</Description>
 	s pObject=##class(%ZEN.proxyObject).%New()
 	s pObject.Status=0
 
-	s sql="SELECT Name, Type FROM %Studio.ProjectItem WHERE Project='"_SubPackage_"' and Name='"_Name_"'"
+	set sql="SELECT Name, Type "_
+			"FROM %Studio.ProjectItem "_
+			"WHERE Project='"_SubPackage_"' and "_
+			"Name='"_Name_"' or "_
+			"Name=$LIST($LISTFROMSTRING('"_Name_"','.'),1) and Type='PKG'"
 
 	s sttm=##class(%SQL.Statement).%New()
 	s sttm.%ObjectSelectMode=1
@@ -868,6 +1001,56 @@ Cоздание класса</Description>
 	s res=sttm.%Execute()
 	while res.%Next() {
 		s pObject.Status=1
+	}
+	
+
+	do pObject.%ToJSON()
+	s $namespace=ns
+	Q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="downloadProject">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	//$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+	s NameSpace=%request.Get("NameSpace","")
+	s SubPackage=%request.Get("SubPackage","")
+	s Name=%request.Get("Name","")
+	
+	s ns=$namespace
+	s $namespace=NameSpace
+	s pObject=##class(%ZEN.proxyObject).%New()
+	set pObject.children=##class(%ListOfDataTypes).%New()
+	s sqlProject="SELECT Name, Type "_
+				 "FROM %Studio.ProjectItem "_
+				 "WHERE Project='"_SubPackage_"'"
+				
+	s sttm=##class(%SQL.Statement).%New()
+	s sttm.%ObjectSelectMode=1
+	s st=sttm.%Prepare(sqlProject)
+	s res=sttm.%Execute()
+	while res.%Next() {
+		s tObj=##class(%ZEN.proxyObject).%New()
+		//s tObj.Source=##class(%Stream.TmpBinary).%New()
+		s t=##class(%Stream.TmpBinary).%New()
+		if (res.%Get("Type")="MAC")	   {
+			s temp=##class(%Library.Routine).%OpenId(res.%Get("Name"))
+	
+			s tObj.Source=$System.Encryption.Base64Encode(temp.Read(temp.Size))
+			s tObj.Name=res.%Get("Name")
+			s tName=$LISTFROMSTRING(res.%Get("Name"),".")
+			s jump=1
+			if $ISVALIDNUM($LIST(tName,$LL(tName)-1)){s jump=2}
+			s tObj.relativePath=..#Routine_"/"_$LISTTOSTRING($LIST(tName,1,$LL(tName)-jump),"/")_"."_$LISTTOSTRING($LIST(tName,*-jump+1,*),".")
+			d pObject.children.Insert(tObj)		
+		}
+		elseif (res.%Get("Type")="GBL"){}
+		elseif (res.%Get("Type")="PKG"){}
+		elseif (res.%Get("Type")="DIR"){}
+		elseif (res.%Get("Type")="CLS"){}
+		elseif (res.%Get("Type")="CSP"){}
 	}
 	
 
@@ -1007,13 +1190,44 @@ Replace "%" -> "@"]]></Description>
 
 <Class name="Studio.Remote.TreeView">
 <Super>%RegisteredObject</Super>
-<TimeChanged>63463,54198.190775</TimeChanged>
+<TimeChanged>63464,86169.634588</TimeChanged>
 <TimeCreated>63460,39714.568818</TimeCreated>
 
 <Parameter name="Replace">
 <Description><![CDATA[
-Replace "%" -> "@"]]></Description>
+Replace "%" -> "@" (URL)]]></Description>
 <Default>@</Default>
+</Parameter>
+
+<Parameter name="rFolder">
+<Description><![CDATA[
+	(WebApp)->(Folder)
+Replace "/" -> "@"  ]]></Description>
+<Default>'</Default>
+</Parameter>
+
+<Parameter name="Class">
+<Description>
+Display Name of Class - Class</Description>
+<Default>Class</Default>
+</Parameter>
+
+<Parameter name="Routine">
+<Description>
+Display Name of Routine - Routine</Description>
+<Default>Routine</Default>
+</Parameter>
+
+<Parameter name="CSP">
+<Description>
+Display Name of CSP - CSP</Description>
+<Default>CSP</Default>
+</Parameter>
+
+<Parameter name="Other">
+<Description>
+Display Name of Other - Other</Description>
+<Default>Other</Default>
 </Parameter>
 
 <Method name="GetClasses">
@@ -1072,79 +1286,6 @@ Replace "%" -> "@"]]></Description>
 	do pObject.%ToJSON()
 	s $namespace= ns
 	q $$$OK
-]]></Implementation>
-</Method>
-
-<Method name="GetClasses1">
-<ClassMethod>1</ClassMethod>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
-	set NameSpace=%request.Get("NameSpace","")
-	set SubPackage=%request.Get("SubPackage","")
-	s ns=$namespace
-	s $namespace=NameSpace
-	set pObject=##class(%ZEN.proxyObject).%New()
-	set pObject.children=##class(%ListOfDataTypes).%New()
-	set tList=""	
-	if SubPackage="" {
-		set sql="SELECT $LIST($LISTFROMSTRING(Name,'.'),1) AS Name FROM %Dictionary.ClassDefinition  Group by $LIST($LISTFROMSTRING(Name,'.'),1)"
-	}
-	else {
-		set sql="SELECT * FROM %Dictionary.ClassDefinition where Name %STARTSWITH '"_SubPackage_".'"
-	}
-	s l=$LL($LISTFROMSTRING(SubPackage,"."))
-	set sttm=##class(%SQL.Statement).%New()
-	set sttm.%ObjectSelectMode=1
-	set st=sttm.%Prepare(sql)
-	set res=sttm.%Execute()
-	while(res.%Next()'=0){
-		//w res.%Get("Name"),!
-		s NameLENGTH=$LL($LISTFROMSTRING(res.%Get("Name"),"."))
-		if SubPackage=""{
-			s tObj=##class(%ZEN.proxyObject).%New()
-			s tObj.isFolder=1
-			s tObj.DisplayName=res.%Get("Name")
-			s tObj.Name=res.%Get("Name")
-			do pObject.children.Insert(tObj)
-		}
-		else{
-			if ((NameLENGTH-1)<=l){
-				s DisplayName=$LISTTOSTRING($LIST($LISTFROMSTRING(res.%Get("Name"),"."),l+1,*),".")
-				s Name=res.%Get("Name")
-				s tObj=##class(%ZEN.proxyObject).%New()
-				s tObj.isFolder=0
-				s tObj.Target="class"
-				s tObj.relativePath="Class/"_$REPLACE(res.%Get("Name"),".","/")_".CLS"
-				s tObj.DisplayName=DisplayName
-				s tObj.Name=Name
-				do pObject.children.Insert(tObj)
-			}
-			else{
-				s DisplayName=$LISTTOSTRING($LIST($LISTFROMSTRING(res.%Get("Name"),"."),l+1,l+1),".")
-				s Name=res.%Get("Name")
-			
-				s tST=1
-	 			for i=1:1:$LL(tList){
-		 			if ($FIND(Name,$LI(tList,i)_".")'=0){
-			 			s tST=0
-			 		}
-		 		}
-		 		if (tST){
-					s tObj=##class(%ZEN.proxyObject).%New()
-					s tObj.isFolder=1
-					s tObj.DisplayName=DisplayName
-					
-					s tObj.Name=$LISTTOSTRING($LIST($LISTFROMSTRING(res.%Get("Name"),"."),1,l+1),".")
-					do pObject.children.Insert(tObj)
-					s $LIST(tList,$LL(tList)+1)=DisplayName		
-				}
-			}
-		}
-
-	}
-	do pObject.%ToJSON()
-	s $namespace= ns	
-	Q $$$OK
 ]]></Implementation>
 </Method>
 
@@ -1266,7 +1407,7 @@ Replace "%" -> "@"]]></Description>
 			else{
 			s tObj.isFolder=0
 
-			s tObj.relativePath="CSP/"_$REPLACE($E(result.Get("Name"),$length(Path)+1,*),"\","/") //$E(result.Get("Name"),$length(Path_Target)+1,*)
+			s tObj.relativePath=..#CSP_"/"_$REPLACE(WebAPP,"/",..#rFolder)_"/"_$REPLACE($E(result.Get("Name"),$length(Path)+1,*),"\","/") //$E(result.Get("Name"),$length(Path_Target)+1,*)
 			s tObj.Target="csp"
 			}
 			s st=pObject.children.Insert(tObj)
@@ -1327,10 +1468,51 @@ Replace "%" -> "@"]]></Description>
 	q 1
 ]]></Implementation>
 </Method>
+
+<Method name="GetTree">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	#dim namespace= "SAMPLES" //%request.Get("NameSpace","")
+	s ns=$namespace
+	s $namespace=namespace
+	s pObject=##class(%ZEN.proxyObject).%New()
+	s pObject.children=##class(%ListOfDataTypes).%New()
+	s tObj=##class(%ZEN.proxyObject).%New()
+	s tObj.Namespace=namespace
+	// Class
+	s tObj.Name="Class"
+	s tObj.DisplayName=..#Class
+	s tObj.Target="Class"
+	s tObj.isFolder=1
+	d pObject.children.Insert(tObj)
+	// Routine
+	s tObj.Name="Routine"
+	s tObj.DisplayName=..#Routine
+	s tObj.Target="Routine"
+	s tObj.isFolder=1
+	d pObject.children.Insert(tObj)
+	// CSP
+	s tObj.Name="CSP"
+	s tObj.DisplayName=..#CSP
+	s tObj.Target="CSP"
+	s tObj.isFolder=1
+	d pObject.children.Insert(tObj)
+	// Other
+	s tObj.Name="Other"
+	s tObj.DisplayName=..#Other
+	s tObj.Target="Other"
+	s tObj.isFolder=1
+	d pObject.children.Insert(tObj)	
+	d pObject.%ToJSON() 	
+	s $namespace=ns
+]]></Implementation>
+</Method>
 </Class>
 
 
-<Routine name="Untitled1" type="INT" languagemode="0" generated="1" timestamp="63460,42111.613029"><![CDATA[
+<Routine name="Untitled1" type="INT" languagemode="0" generated="1" timestamp="63465,82768.943467"><![CDATA[
 
 ]]></Routine>
 
@@ -1370,7 +1552,7 @@ Replace "%" -> "@"]]></Description>
 
 <Class name="WEB.Broker">
 <Super>%CSP.REST</Super>
-<TimeChanged>63462,84275.576058</TimeChanged>
+<TimeChanged>63469,76282.85388</TimeChanged>
 <TimeCreated>63440,61672.437524</TimeCreated>
 
 <XData name="UrlMap">
@@ -1406,6 +1588,7 @@ Replace "%" -> "@"]]></Description>
     <Route Url="/source/other" Method="GET" Call="Studio.Remote.Source:GetOther"/>
     
     <Route Url="/get" Method="GET" Call="Studio.Remote.TreeView:Get"/>
+    <Route Url="/get2" Method="GET" Call="Studio.Remote.ProjectView:downloadProject"/>
     
 </Routes>
 ]]></Data>
@@ -1413,75 +1596,6 @@ Replace "%" -> "@"]]></Description>
 </Class>
 
 
-
-
-<Class name="WEB.Test.NewClass1">
-<Super>%Persistent</Super>
-<TimeChanged>63454,53842.808987</TimeChanged>
-<TimeCreated>63454,53842.624228</TimeCreated>
-
-<Storage name="Default">
-<Type>%Library.CacheStorage</Type>
-<DataLocation>^WEB.Test.NewClass1D</DataLocation>
-<DefaultData>NewClass1DefaultData</DefaultData>
-<IdLocation>^WEB.Test.NewClass1D</IdLocation>
-<IndexLocation>^WEB.Test.NewClass1I</IndexLocation>
-<StreamLocation>^WEB.Test.NewClass1S</StreamLocation>
-<Data name="NewClass1DefaultData">
-<Structure>listnode</Structure>
-<Subscript/>
-<Value name="1">
-<Value>%%CLASSNAME</Value>
-</Value>
-</Data>
-</Storage>
-</Class>
-
-
-<Class name="WEB.Test.NewClass12">
-<Super>%Persistent</Super>
-<TimeChanged>63455,37251.845356</TimeChanged>
-<TimeCreated>63455,37251.664707</TimeCreated>
-
-<Storage name="Default">
-<Type>%Library.CacheStorage</Type>
-<DataLocation>^WEB.Test.NewClass12D</DataLocation>
-<DefaultData>NewClass12DefaultData</DefaultData>
-<IdLocation>^WEB.Test.NewClass12D</IdLocation>
-<IndexLocation>^WEB.Test.NewClass12I</IndexLocation>
-<StreamLocation>^WEB.Test.NewClass12S</StreamLocation>
-<Data name="NewClass12DefaultData">
-<Structure>listnode</Structure>
-<Subscript/>
-<Value name="1">
-<Value>%%CLASSNAME</Value>
-</Value>
-</Data>
-</Storage>
-</Class>
-
-
-<Class name="WEB.Test.Test3.NewClass2">
-<Super>%Persistent</Super>
-<TimeChanged>63455,37303.525066</TimeChanged>
-<TimeCreated>63455,37303.356434</TimeCreated>
-
-<Storage name="Default">
-<Type>%Library.CacheStorage</Type>
-<DataLocation>^WEB.Test.Test3.NewClass2D</DataLocation>
-<DefaultData>NewClass2DefaultData</DefaultData>
-<IdLocation>^WEB.Test.Test3.NewClass2D</IdLocation>
-<IndexLocation>^WEB.Test.Test3.NewClass2I</IndexLocation>
-<StreamLocation>^WEB.Test.Test3.NewClass2S</StreamLocation>
-<Data name="NewClass2DefaultData">
-<Structure>listnode</Structure>
-<Subscript/>
-<Value name="1">
-<Value>%%CLASSNAME</Value>
-</Value>
-</Data>
-</Storage>
-</Class>
 
 
 
@@ -1492,8 +1606,8 @@ Replace "%" -> "@"]]></Description>
 <Language>cache</Language>
 <ProcedureBlock>0</ProcedureBlock>
 <Super>%CSP.Page</Super>
-<TimeChanged>63460,42111.630371</TimeChanged>
-<TimeCreated>63460,42111.627029</TimeCreated>
+<TimeChanged>63465,82768.954331</TimeChanged>
+<TimeCreated>63465,82768.95272</TimeCreated>
 <GeneratedBy>/csp/mdg-dev/Test/Test2/Untitled1.CSP</GeneratedBy>
 
 <Method name="OnPage">
@@ -1573,8 +1687,8 @@ Replace "%" -> "@"]]></Description>
 <Language>cache</Language>
 <ProcedureBlock>0</ProcedureBlock>
 <Super>%CSP.Page</Super>
-<TimeChanged>63460,42111.641006</TimeChanged>
-<TimeCreated>63460,42111.639509</TimeCreated>
+<TimeChanged>63465,82768.964952</TimeChanged>
+<TimeCreated>63465,82768.963293</TimeCreated>
 <GeneratedBy>/csp/mdg-dev/Test/Untitled2.CSP</GeneratedBy>
 
 <Method name="OnPage">
