@@ -1,5 +1,4 @@
 {View, EditorView, Workspace} = require 'atom'
-StudioAPI= require '../studio-api/studio-api'
 fs= require 'fsplus' # JSON fsplus
 fsp= require 'fs-plus'
 http = require 'http'
@@ -12,12 +11,13 @@ class FileView extends View
   path:''
   TempDir:''
   Target:''
+  studioAPI:null
   @content: ->
     @li class: 'file entry list-item', =>
       @span class: 'name icon', outlet: 'fileName'
 
-  initialize: (@file={},defProject,namespace,WebAPP) ->
-    @studioAPI=new StudioAPI(atom.config.get('Atom-COS-Studio.UrlToConnect'))
+  initialize: (@file={},defProject,namespace,StudioAPI) ->
+    @studioAPI=StudioAPI
     @TempDir=atom.config.get('Atom-COS-Studio.TempDir')
     @fileName.text(@file.DisplayName)
     @fileName.addClass('icon-file-text')
@@ -38,9 +38,6 @@ class FileView extends View
   open: ->
     atom.workspaceView.open(@path, split: 'left', searchAllPanes: true).done (editorView) ->
       #if editorView instanceof EditorView
-      editorView.Parampapam={Test:'ttt'}
-      console.log editorView
-
   check: ->
     @studioAPI.ItemExist 'project', @namespace, @defProject, @name, (result) =>
       if result.Status
@@ -60,24 +57,11 @@ class FileView extends View
 
   sDownload : (result) ->
     @path="#{@TempDir}#{@namespace}/#{@relativePath}"
+    @path=@path.replace('/','\\').replace('/','\\').replace('/','\\').replace('/','\\').replace('/','\\').replace('/','\\')
     @write (st) =>
       result('')
   write:(st) ->
 
-    @studioAPI.source @Target, @namespace, @name, (response) =>
-      fsp.writeFile @path, '' , (status) =>
-        file = fsp.createWriteStream(@path)
-        response.pipe(file)
+    @studioAPI.getSource @Target, @namespace, @name, (response) =>
+      fsp.writeFile @path, response , (status) =>
         st()
-
-      #file = fs.createWriteStream(@path)
-      #response.pipe(file)
-      #st('')
-    #  console.log @path
-      #fsp.writeFile @path, result.Source , (status) =>
-
-  ###  request = http.get "http://localhost:57772/mdg-dev/source/csp?NameSpace=SAMPLES&Name="+@name , (response) =>
-      console.log response
-      file = fs.createWriteStream(@path)
-      response.pipe(file)
-      st('') ###

@@ -4,6 +4,7 @@ path=require 'path'
 fs= require 'fsplus' # JSON fsplus
 fsp= require 'fs-plus'
 StudioAPI= require './studio-api/studio-api'
+StudioAPI2= require './studio-api/studio-api2'
 SelectNameSpaceView=require './view/select-namespace-view'
 Tree=require './tree-view/tree'
 TreeView=require './tree-view/tree-view'
@@ -29,14 +30,14 @@ class AtomCOSStudioView extends View
   @content: ->
     @div ''
   initialize: (serializeState) ->
-    @studioAPI=new StudioAPI(atom.config.get('Atom-COS-Studio.UrlToConnect'))
+
+    @studioAPI= new StudioAPI2({ServerURL:atom.config.get('Atom-COS-Studio.UrlToConnect')})
+    #@studioAPI=new StudioAPI(atom.config.get('Atom-COS-Studio.UrlToConnect'))
     atom.config.observe 'Atom-COS-Studio.UrlToConnect', =>
       @studioAPI.setURL(atom.config.get('Atom-COS-Studio.UrlToConnect'))
     @handleEvents() # events
-    #@treeView =new TreeView()
     atom.workspace.registerOpener (uriToOpen) ->
 
-      #console.log path.extname(uriToOpen)
       if 'Atom-COS-Studio://terminal-view'==uriToOpen
         return new TerminalView()
       {protocol, host, pathname} = url.parse(uriToOpen)
@@ -54,20 +55,6 @@ class AtomCOSStudioView extends View
       @detach()
     else
       atom.workspaceView.append(this)
-  loadPlugins:(state) ->
-    LoadedPlugins={}
-    PluginsDir=atom.packages.resolvePackagePath('Atom-COS-Studio')+"/lib/plugins/"
-    Plugins=fsp.readdirSync(PluginsDir,{})
-    for PluginName, index in Plugins
-      if fs.existsSync PluginsDir+"/#{PluginName}/package.json"
-        pluginPackage=fs.readJSON PluginsDir+"/#{PluginName}/package.json"
-        if atom.config.get("Atom-COS-Studio.Enable#{pluginPackage.name}Plugin")==undefined
-          atom.config.set("Atom-COS-Studio.Enable#{pluginPackage.name}Plugin",true)
-        if pluginPackage.main!='' and atom.config.get("Atom-COS-Studio.Enable#{pluginPackage.name}Plugin")
-          tempPlg=require "./plugins/#{PluginName}#{pluginPackage.main}"
-          LoadedPlugins[PluginName]=new tempPlg(state,LoadedPlugins)
-        if index==Plugins.length-1
-          atom.workspaceView.trigger('Atom-COS-Studio:plugins-loaded-state')
 
   handleEvents: ->
     atom.workspaceView.command "Atom-COS-Studio:toggle", => @toggle()
@@ -99,27 +86,34 @@ class AtomCOSStudioView extends View
       @outputView= new OutputView()
       @outputView.show()
       return @outputView
+  downloadProject: (namespace, project) ->
+    @studioAPI.downloadProject namespace,project, (data) =>
+      console.log data
+      for item in data.children
+        fsp.writeFile "#{atom.config.get('Atom-COS-Studio.TempDir')}#{namespace}\\#{project}\\#{item.relativePath}", window.atob(item.Source) , (status) =>
+
   namespace: ->
     selectNameSpaceView=new SelectNameSpaceView()
     selectNameSpaceView.success (namespace,project) =>
+      fsp.makeTreeSync("#{atom.config.get('Atom-COS-Studio.TempDir')}#{namespace}\\#{project}")
+      @downloadProject(namespace,project)
       @NameSpace=namespace
-      ###@studioAPI.getpath {NameSpace:namespace,TempDir:atom.config.get('Atom-COS-Studio.TempDir') }, (fullpath) =>
-        atom.project.setPath(fullpath.Path)
-        @treeView.toggle() ###
       if @workSpacePanelView==null
-        @workSpacePanelView=new WorkSpacePanelView({NS:namespace,PRJ:project})
+        @workSpacePanelView=new WorkSpacePanelView({NS:namespace,PRJ:project},@studioAPI)
       else
         @workSpacePanelView.detach()
-        @workSpacePanelView=new WorkSpacePanelView({NS:namespace,PRJ:project})
+        @workSpacePanelView=new WorkSpacePanelView({NS:namespace,PRJ:project},@studioAPI)
       selectNameSpaceView.detach()
   save: ->
-    if atom.workspace.getActiveEditor()?
-      editor=atom.workspace.getActiveEditor()
-      console.log editor
-      console.log editor.getPath()
-      if @getProperties().type=='cls'
-        @studioAPI.updateclass {namespace:@NameSpace,nameClass:@getProperties().name,text:editor.getText(),TempDir:atom.config.get('Atom-COS-Studio.TempDir')}, (status) =>
-          @Output().save(status, status, @getProperties().file)
+    if atom.workspace.getActiveTextEditor()?
+      editor=atom.workspace.getActiveTextEditor()
+      @studioAPI.save {
+        NameSpace:@NameSpace,
+        TempDir:atom.config.get('Atom-COS-Studio.TempDir'),
+        children:[{Path:editor.getPath(),Source:window.btoa(editor.getText())}]
+        }, (status) =>
+          console.log status
+        #  @Output().save(status, status, @getProperties().file)
   compile: ->
     @save()
     if @getProperties().type=='cls'

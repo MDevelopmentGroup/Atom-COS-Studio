@@ -30,7 +30,6 @@ class SelectNameSpaceView extends View
   initialize:  ->
     @studioAPI=new StudioAPI(atom.config.get('Atom-COS-Studio.UrlToConnect'))
 
-
     @nSelect.on 'click', =>
       @getProjects()
 
@@ -89,7 +88,11 @@ class SelectNameSpaceView extends View
   getNamespace: ->
     @nSelect.find(":selected")[0].value
   getProject: ->
-    @pSelect.find(":selected")[0]?.value
+    #@ProjectNameDiv
+    if @ProjectNameDiv[0].style.display=="block"
+      @ProjectName[0].value
+    else
+      @pSelect.find(":selected")[0]?.value
   success: (call) ->
     @OKButton.on 'click', =>
       call(@getNamespace(),@getProject())

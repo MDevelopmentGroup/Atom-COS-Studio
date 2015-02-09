@@ -6,17 +6,18 @@ fsp= require 'fs-plus'
 module.exports =
 class WorkSpacePanelView extends View
   TempDir:''
+  SudioAPI:null
   @content: ->
     @div class: 'workspace-panel-view tool-panel native-key-bindings ', tabindex: -1, =>
       @ul tabindex:-1, class:'list-inline tab-bar insertpanel',id:'TabMenu1', outlet:'TabMenu'
       @div style:'height:100%', outlet:'BodyHTML', =>
-
         @div style:'height:93%', id:'ScopeTree', outlet:'ScopeTree'
         @div '',id:'ProjectTree', outlet:'ProjectTree'
         @div '',id:'ProjectsTree', outlet:'ProjectsTree'
       @div style:'height:50px', ''
 
-  initialize: (Param={})->
+  initialize: (Param={},studioApi)->
+    @SudioAPI=studioApi
     items=[{title:'Project'},{title:'Scope'}]
     @setTabMenuItems(items)
     @TempDir=atom.config.get('Atom-COS-Studio.TempDir')
@@ -24,8 +25,8 @@ class WorkSpacePanelView extends View
       atom.workspaceView.prependToLeft(this)
       @bind(this)
 
-    remoteScopeTreeView =new RemoteTreeView({NS:Param.NS, Type:'scope', defProject:Param.PRJ})
-    @ScopeTree.html remoteScopeTreeView
+    remoteTreeView =new RemoteTreeView({NS:Param.NS, Type:'scope', defProject:Param.PRJ},@SudioAPI)
+    @ScopeTree.html remoteTreeView
 
     @treeView =new TreeView()
     @Path="#{@TempDir}#{Param.NS}\\#{Param.PRJ}"
