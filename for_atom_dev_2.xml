@@ -1,67 +1,795 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2014.2 (Build 315U)" ts="2015-02-09 14:38:45">
-<CSP name="Test/Test2/Untitled1.CSP" application="/csp/mdg-dev/" default="1"><![CDATA[
-<html>
-<head>
-
-<!-- Put your page Title here -->
-<title>	Cache Server Page </title>
-
-</head>
-
-<body>
-
-		<!-- Put your page code here -->
-		My page body
-</body>
-</html>
-]]></CSP>
-
-
-<CSP name="Test/Untitled2.CSP" application="/csp/mdg-dev/" default="1"><![CDATA[
-<html>
-<head>
-
-<!-- Put your page Title here -->
-<title>	Cache Server Page </title>
-
-</head>
-
-<body>
-
-		<!-- Put your page code here -->
-		My page body
-</body>
-</html>
-]]></CSP>
-
-
-<Project name="Atom-Studio" LastModified="2014-10-10 12:56:25.549407">
+<Export generator="Cache" version="25" zv="Cache for Windows (x86-64) 2014.2 (Build 315U)" ts="2015-02-09 15:00:50">
+<Project name="Atom-Dev" LastModified="2015-02-09 15:00:50.12259">
   <Items>
+    <ProjectItem name="AtomStudio" type="PKG"></ProjectItem>
     <ProjectItem name="MDG" type="PKG"></ProjectItem>
     <ProjectItem name="Studio" type="PKG"></ProjectItem>
-    <ProjectItem name="Untitled1.INT" type="MAC"></ProjectItem>
-    <ProjectItem name="Untitled1.MAC" type="MAC"></ProjectItem>
-    <ProjectItem name="Untitled12.BAS" type="MAC"></ProjectItem>
-    <ProjectItem name="Untitled123.MVB" type="MVB"></ProjectItem>
-    <ProjectItem name="Untitled2.INC" type="MAC"></ProjectItem>
-    <ProjectItem name="Untitled3.INT" type="MAC"></ProjectItem>
-    <ProjectItem name="Untitled5" type="PKG"></ProjectItem>
-    <ProjectItem name="Untitled5.Test.INT" type="MAC"></ProjectItem>
-    <ProjectItem name="Untitled6" type="PKG"></ProjectItem>
-    <ProjectItem name="Untitled6.Test.2.INC" type="MAC"></ProjectItem>
-    <ProjectItem name="Untitled7" type="PKG"></ProjectItem>
-    <ProjectItem name="Untitled7.Test.w.INC" type="MAC"></ProjectItem>
-    <ProjectItem name="Untitled8" type="PKG"></ProjectItem>
-    <ProjectItem name="Untitled8.3.Test.INC" type="MAC"></ProjectItem>
     <ProjectItem name="WEB" type="PKG"></ProjectItem>
-    <ProjectItem name="csp" type="PKG"></ProjectItem>
-    <ProjectItem name="csp/mdg-dev" type="DIR"></ProjectItem>
-    <ProjectItem name="csp/mdg-dev/Test" type="DIR"></ProjectItem>
-    <ProjectItem name="mdg-dev" type="DIR"></ProjectItem>
-    <ProjectItem name="sc" type="PKG"></ProjectItem>
   </Items>
 </Project>
+
+
+<Class name="AtomStudio.Base">
+<Super>%RegisteredObject</Super>
+<TimeChanged>63490,65166.848023</TimeChanged>
+<TimeCreated>63489,58239.81369</TimeCreated>
+
+<Parameter name="Replace">
+<Description><![CDATA[
+Replace "%" -> "@" (URL)]]></Description>
+<Default>@</Default>
+</Parameter>
+
+<Parameter name="rFolder">
+<Description><![CDATA[
+	(WebApp)->(Folder)
+Replace "/" -> "@"  ]]></Description>
+<Default>'</Default>
+</Parameter>
+
+<Parameter name="Class">
+<Description>
+Display Name of Class - Class</Description>
+<Default>Class</Default>
+</Parameter>
+
+<Parameter name="Routine">
+<Description>
+Display Name of Routine - Routine</Description>
+<Default>Programs</Default>
+</Parameter>
+
+<Parameter name="CSP">
+<Description>
+Display Name of CSP - CSP</Description>
+<Default>CSP</Default>
+</Parameter>
+
+<Parameter name="Other">
+<Description>
+Display Name of Other - Other</Description>
+<Default>Other</Default>
+</Parameter>
+
+<Property name="ContentType">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Content">
+<Type>%Stream.FileCharacter</Type>
+<Required>1</Required>
+</Property>
+
+<Method name="Write">
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st as %Status=$$$OK
+	//do %response.SetHeader("Content-Type","application/"_..ContentType)
+	//w $ZConvert(..Content.Read(..Content.Size),"I","UTF8")
+	w ..Content.Read(..Content.Size)
+	Quit st
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="AtomStudio.Broker">
+<Super>%CSP.REST,AtomStudio.Base</Super>
+<TimeChanged>63491,73009.291146</TimeChanged>
+<TimeCreated>63489,59413.154296</TimeCreated>
+
+<XData name="UrlMap">
+<Data><![CDATA[
+<Routes>
+ 
+    <Route Url="/namespaces" Method="POST" Call="MDG.Request:GetNamespaces" />
+    <Route Url="/namespaces/classlist" Method="POST" Call="MDG.Request:GetClassList" />
+    <Route Url="/namespaces/classname" Method="POST" Call="MDG.Request:GetClass" />
+    <Route Url="/updateclass" Method="POST" Call="MDG.Request:UpdateClass" />
+    <Route Url="/createclass" Method="POST" Call="MDG.Request:CreateClass" />
+    <Route Url="/compilationclass" Method="POST" Call="MDG.Request:CompilationClass" />
+    <Route Url="/deleteclass" Method="POST" Call="MDG.Request:DeleteClass" />
+    <Route Url="/createmethod" Method="POST" Call="MDG.Request:CreateMethod" />
+    <Route Url="/createproperty" Method="POST" Call="MDG.Request:CreateProperty" />
+    <Route Url="/getparameter" Method="POST" Call="MDG.Request:GetParameters"/>
+    <Route Url="/getpath" Method="POST" Call="MDG.Request:GetPath"/>
+    <Route Url="/refresh" Method="POST" Call="MDG.Request:Refresh"/>
+    <Route Url="/saveall" Method="POST" Call="MDG.Request:SaveAll"/>
+    <Route Url="/compileall" Method="POST" Call="MDG.Request:CompileAll"/>
+    
+    <Route Url="/classes" Method="GET" Call="Studio.Remote.TreeView:GetClasses"/>
+    <Route Url="/routines" Method="GET" Call="Studio.Remote.TreeView:GetRoutines"/>
+    <Route Url="/csp" Method="GET" Call="Studio.Remote.TreeView:GetCSP"/>
+    <Route Url="/other" Method="GET" Call="Studio.Remote.TreeView:GetOther"/>
+    
+    <Route Url="/project" Method="GET" Call="Studio.Remote.ProjectView:GetProjects"/>
+    <Route Url="/exist/project" Method="GET" Call="Studio.Remote.ProjectView:ItemExist"/>
+    
+    <Route Url="/source/class" Method="GET" Call="Studio.Remote.Source:GetClass"/>
+    <Route Url="/source/routine" Method="GET" Call="Studio.Remote.Source:GetRoutine"/>
+    <Route Url="/source/csp" Method="GET" Call="Studio.Remote.Source:GetCSP"/>
+    <Route Url="/source/other" Method="GET" Call="Studio.Remote.Source:GetOther"/>
+    
+    <Route Url="/get" Method="GET" Call="Studio.Remote.TreeView:Get"/>
+    <Route Url="/get2" Method="GET" Call="Studio.Remote.ProjectView:M2"/>
+    <Route Url="/get3" Method="GET" Call="Studio.Remote.ProjectView:downloadProject"/>
+    
+    
+    
+    
+    <Route Url="/Tree" 		Method="POST" Call="AtomStudio.RemoteTree:GetTree"/>
+    <Route Url="/Source" 	Method="POST" Call="AtomStudio.FileSource:GetSource"/>
+    
+    <Route Url="/Save" 		Method="POST" Call="AtomStudio.FileSave:Save"/>
+    <Route Url="/Compile" 	Method="POST" Call="AtomStudio.FileSource:GetSource"/>
+    
+    <Route Url="/downloadProject" Method="POST" Call="AtomStudio.Project:downloadProject"/>
+    
+    
+    
+</Routes>
+]]></Data>
+</XData>
+</Class>
+
+
+<Class name="AtomStudio.FileSave">
+<Super>%RegisteredObject,AtomStudio.Base</Super>
+<TimeChanged>63491,84093.980468</TimeChanged>
+<TimeCreated>63491,69150.458529</TimeCreated>
+
+<Method name="Save">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	#dim obj,tObj As %ZEN.proxyObject
+	#dim TempDir,NameSpace,Target As %String=""
+	#dim delimiter As %String="\"
+	$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+	s targetList=$lb(..#Class,..#Routine,..#CSP,..#Other)
+	s sStatus=##class(%ZEN.proxyObject).%New()
+	s sStatus.children=##class(%ListOfDataTypes).%New()
+	s TempDir=obj.TempDir,NameSpace=obj.NameSpace
+	s lenTempDir=$length(TempDir)
+	for i=1:1:obj.children.Size{
+		s tObj=obj.children.GetAt(i)
+		s lPath=$listfromstring($e(tObj.Path,lenTempDir+1,*),delimiter)
+		s jump=2
+		if $LF(targetList,$list(lPath,jump))=0{s jump=3}
+		//s Target=$LIST(lPath,jump)
+		if Target=..#Class{	
+			s classname=$LTS($list($LFS($LTS($list(lPath,jump+1,*),"."),"."),1,*-1),".")
+			s st=..SaveClass(classname,tObj.Source,NameSpace,.sStatus)	
+		}
+		elseif Target=..#Routine{
+			s routinename=$LTS($list($LFS($LTS($list(lPath,jump+1,*),"."),"."),1,*-1),".")
+			s st=..SaveRoutine(routinename,tObj.Source,NameSpace,.sStatus)
+		}
+		elseif Target=..#CSP {
+			s path="\"_$LTS($list(lPath,jump+1,*),"\")
+			s st=..SaveCSP(path,tObj.Source,NameSpace,.sStatus)
+		}
+		elseif Target=..#Other{
+			s name=$LTS($list(lPath,jump+1,*),"\")
+			s st=..SaveOther(name,tObj.Source,NameSpace,.sStatus)	
+		}
+	}
+	do sStatus.%ToJSON()
+	Quit st
+]]></Implementation>
+</Method>
+
+<Method name="SaveClass">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[classname:%String,source:%String,namespace:%String,&sStatus:%ZEN.proxyObject]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	//w classname," ",source," ",namespace,!
+	#dim isSave,isExists,st As %Status=$$$OK
+	#dim temp As %String=""	
+	s tObj=##class(%ZEN.proxyObject).%New()
+	set isExists=##class(%Dictionary.ClassDefinition).%ExistsId(classname)
+	if ('isExists){
+		set ns=$namespace
+		set $namespace=namespace
+		set newClass = ##class(%Dictionary.ClassDefinition).%New(classname)
+    	set isSave = newClass.%Save()
+    	set $namespace=ns
+	}
+	if (isExists&&isSave){
+		w isExists,isSave,!
+		set stream=##class(%Stream.FileBinary).%New()
+	   	set temp=$System.Encryption.Base64Decode($ZConvert(source,"I","UTF8"))
+    	s st= stream.Write(temp)
+    	set st= ##class(%Compiler.UDL.TextServices).SetTextFromStream(namespace, classname, stream)
+    	s tObj.Name=classname
+		s tObj.Status=st
+		if st {s tObj.Status="Saved"}
+		s st=sStatus.children.Insert(tObj)
+	}
+	Quit st
+]]></Implementation>
+</Method>
+
+<Method name="SaveRoutine">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[routinename:%String,source:%String,namespace:%String,&sStatus:%ZEN.proxyObject]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim isExists,isSave,st As %Status=$$$OK
+	#dim temp As %String=""
+	s tObj=##class(%ZEN.proxyObject).%New()
+	set isExists=##class(%Library.Routine).%ExistsId(routinename)
+	if ('isExists){
+		set newRoutine = ##class(%Library.Routine).%New(routinename)
+    	set isSave = newRoutine.%Save()
+	}
+	if (isExists&&isSave){
+	   	set temp=$System.Encryption.Base64Decode($ZConvert(source,"I","UTF8"))
+    	set Routine=##class(%Library.Routine).%OpenId(routinename)
+    	if 'Routine.Generated {
+    		set st= Routine.Write(temp)
+    		set st=Routine.%Save()
+    		set st=Routine.Compile()
+    		s tObj.Name=routinename
+    		s tObj.Status=st
+    		if st {s tObj.Status="Saved"}
+    		s st=sStatus.children.Insert(tObj)
+    	}	
+	}
+	Quit st
+]]></Implementation>
+</Method>
+
+<Method name="SaveCSP">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[path:%String,source:%String,namespace:%String,&sStatus:%ZEN.proxyObject]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	#dim temp As %String=""
+	s file=##class(%Stream.FileBinary).%New()
+	s tObj=##class(%ZEN.proxyObject).%New()
+	s file.Filename=$$GetFilename^%apiCSP(path)
+	s temp=$System.Encryption.Base64Decode($ZConvert(source,"I","UTF8"))
+	s st= file.CopyFrom(temp)
+	s st= file.%Save()
+	s tObj.Name=path
+	s tObj.Status=st
+	if st {s tObj.Status="Saved"}
+	s st=sStatus.children.Insert(tObj)
+	Quit st
+]]></Implementation>
+</Method>
+
+<Method name="SaveOther">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[name:%String,source:%String,namespace:%String,&sStatus:%ZEN.proxyObject]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	#dim temp As %String=""
+	s tObj=##class(%ZEN.proxyObject).%New()
+	s tStream=##class(%Stream.TmpBinary).%New()
+	s temp=$System.Encryption.Base64Decode($ZConvert(source,"I","UTF8"))
+	s st=tStream.Write(temp)
+	s st=##class(%DeepSee.UserLibrary.Utils).%Import(tStream,1,0,,,.pItemsLoaded)
+	s tObj.Name=name
+	s tObj.Status=st
+	if st {s tObj.Status="Saved"}
+	s st=sStatus.children.Insert(tObj)
+	Quit st
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="AtomStudio.FileSource">
+<Super>%RegisteredObject,AtomStudio.Base</Super>
+<TimeChanged>63490,63013.089929</TimeChanged>
+<TimeCreated>63490,63013.089929</TimeCreated>
+
+<Method name="GetSource">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	#dim Target As %String=""
+	#dim obj As %ZEN.proxyObject
+	$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+	s Target=obj.target
+	if Target=..#Class {do ..GetClass(obj.namespace,obj.name)}
+	elseif Target=..#Routine {do ..GetRoutine(obj.namespace,obj.name)}
+	elseif Target=..#CSP {do ..GetCSP(obj.namespace,obj.name)}
+	elseif Target=..#Other {do ..GetOther(obj.namespace,obj.name)}
+	Quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetClass">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,Name</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	#dim tStream As %Stream.Character
+	try {
+		if (NameSpace'="")&&(Name'=""){
+			s st=##class(%Compiler.UDL.TextServices).GetTextAsStream(NameSpace,Name,.tStream)	
+			set rFile=##class(AtomStudio.FileSource).%New()
+        	do rFile.Content.CopyFrom(tStream)
+        	set rFile.ContentType="CLS"
+        	do rFile.Write()
+		}
+	}
+    catch (e) {
+        set st=e.AsStatus()
+    }
+    Q st
+]]></Implementation>
+</Method>
+
+<Method name="GetRoutine">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,Name</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	try {
+		if (NameSpace'="")&&(Name'=""){
+			s ns=$namespace
+			s $namespace=NameSpace
+        	s temp=##class(%Routine).%OpenId(Name)
+        	s $namespace=ns
+        	set rFile=##class(AtomStudio.FileSource).%New()
+        	do rFile.Content.CopyFrom(temp)
+        	set rFile.ContentType=temp.RoutineType 
+        	do rFile.Write()
+		}
+	}
+    catch (e) {
+        set st=e.AsStatus()
+    }
+    Q st
+]]></Implementation>
+</Method>
+
+<Method name="GetCSP">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,Name</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	try {
+		if (NameSpace'="")&&(Name'=""){
+			s temp=##class(%Stream.FileBinary).%New()		
+			s temp.Filename=$$GetFilename^%apiCSP(Name) 
+        	set rFile=##class(AtomStudio.FileSource).%New()
+        	do rFile.Content.CopyFrom(temp)
+        	set rFile.ContentType=$LIST($LISTFROMSTRING(temp.Id,"."),*,*)
+        	do rFile.Write()
+		}	
+	} 
+    catch (e) {
+        set st=e.AsStatus()
+    }
+
+    Q st
+]]></Implementation>
+</Method>
+
+<Method name="GetOther">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,Name</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st as %Status=$$$OK
+	set rFile=##class(AtomStudio.FileSource).%New()
+    set rFile.ContentType="DFI"
+    
+	s ns=$namespace
+	s $namespace=NameSpace
+	s temp=##class(%Stream.FileBinary).%New()
+	do ##class(%DeepSee.UserLibrary.Utils).%Export(Name,temp)
+	s $namespace=ns
+	do rFile.Content.CopyFrom(temp)
+	do rFile.Write()
+	Quit st
+]]></Implementation>
+</Method>
+</Class>
+
+
+
+
+<Class name="AtomStudio.Project">
+<Super>%RegisteredObject,AtomStudio.Base</Super>
+<TimeChanged>63490,75500.00456</TimeChanged>
+<TimeCreated>63490,74889.655938</TimeCreated>
+
+<Method name="downloadProject">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	#dim obj As %ZEN.proxyObject
+	$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+	s NameSpace=obj.namespace
+	s SubPackage=obj.project
+	//s Name=%request.Get("Name","")
+	
+
+	
+	s pObject=##class(%ZEN.proxyObject).%New()
+	set pObject.children=##class(%ListOfDataTypes).%New()
+	s ns=$namespace
+	s $namespace=NameSpace
+	s res=##class(%ResultSet).%New("%Studio.Project:ProjectItemsList")
+	d res.Execute(SubPackage)
+	s $namespace=ns
+	while res.Next(){ 
+		//w res.Get("Name"),"  ",res.Get("Type"),"  ",res.Get("InSourceControl"),"  ",res.Get("Package"),"  ",res.Get("CSPApp"),!
+		if (res.Get("Type")="CLS"){
+			if ##class(%Dictionary.ClassDefinition).%ExistsId(res.Get("Name")){
+				s tObj=##class(%ZEN.proxyObject).%New()
+				s st=##class(%Compiler.UDL.TextServices).GetTextAsString(NameSpace,res.Get("Name"),.tText,)
+				s tObj.Source=$System.Encryption.Base64Encode($ZCONVERT(tText,"O","UTF8"))
+				s tName=$LISTFROMSTRING(res.Get("Name"),".")
+				s tObj.relativePath=..#Class_"/"_$LISTTOSTRING($LIST(tName,1,$LL(tName)-1),"/")_"/"_$LISTTOSTRING($LIST(tName,*,*),".")_"."_res.%Get("Type")
+				d pObject.children.Insert(tObj)
+			}
+		}
+		elseif (res.Get("Type")="MAC"){
+			if (##class(%Routine).%ExistsId(res.Get("Name"))){
+				s tObj=##class(%ZEN.proxyObject).%New()
+				s temp=##class(%Library.Routine).%OpenId(res.Get("Name"))
+				s tObj.Source=$System.Encryption.Base64Encode($ZCONVERT(temp.Read(temp.Size),"O","UTF8"))
+				s tObj.Name=res.Get("Name")
+				s tName=$LISTFROMSTRING(res.Get("Name"),".")
+				s jump=1
+				if $ISVALIDNUM($LIST(tName,$LL(tName)-1)){s jump=2}
+				s tObj.relativePath=..#Routine_"/"_$LISTTOSTRING($LIST(tName,1,$LL(tName)-jump),"/")_"."_$LISTTOSTRING($LIST(tName,*-jump+1,*),".")
+				d pObject.children.Insert(tObj) 
+			}
+
+		}
+		elseif (res.Get("Type")="PKG"){}
+		elseif (res.Get("Type")="DIR"){
+			//w "DIR",!
+			if ($list($$getapp^%SYS.cspServer("/"_res.Get("Name")_"/",.path),34)=""){
+			do ..File(res.Get("Name"),.pObject)
+			}
+		}
+		elseif (res.Get("Type")="CSP"){
+			s tObj=##class(%ZEN.proxyObject).%New()
+			s file=##class(%Stream.FileBinary).%New()
+			s file.Filename=$$GetFilename^%apiCSP(res.Get("Name"))
+			s tObj.Source=$System.Encryption.Base64Encode($ZCONVERT(file.Read(file.Size),"O","UTF8"))
+			s tObj.relativePath=..#CSP_"/"_res.Get("Name")
+			s tObj.Name=res.Get("Name")
+			d pObject.children.Insert(tObj)  
+		} 
+		elseif (res.Get("Type")="GBL"){} 
+	}
+	do pObject.%ToJSON()
+
+
+	Q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="File">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[filename:%String,&pObject:%ZEN.proxyObject]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	//zw file
+	If $E(filename,1)'="/" {s filename="/"_filename}
+	s res =##class(%ResultSet).%New("%CSP.Apps:CSPFileSet")
+	d res.Execute(filename)
+	while res.Next() {
+		if res.Get("Type")="F"{
+			s tObj=##class(%ZEN.proxyObject).%New()
+			s file=##class(%Stream.FileBinary).%New()
+			s file.Filename=$$GetFilename^%apiCSP(filename_"/"_res.Get("Name"))
+			s tObj.Source=$System.Encryption.Base64Encode($ZCONVERT(file.Read(file.Size),"O","UTF8"))
+			s tObj.relativePath=..#CSP_filename_"/"_res.Get("Name")
+			s tObj.Name=res.Get("Name")
+			d pObject.children.Insert(tObj)  
+		}
+		else{
+			do ..File(filename_"/"_res.Get("Name"),.pObject)
+		}
+	}
+	Quit $$$OK
+]]></Implementation>
+</Method>
+</Class>
+
+
+<Class name="AtomStudio.RemoteTree">
+<Super>%RegisteredObject,AtomStudio.Base</Super>
+<TimeChanged>63491,60981.140881</TimeChanged>
+<TimeCreated>63489,60280.574245</TimeCreated>
+
+<Method name="GetTree">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	#dim obj As %ZEN.proxyObject
+	$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+	s ns=$namespace
+	s namespace=obj.namespace
+	s SubPackage=obj.subpackage
+	s Target=obj.target
+
+	if Target="Tree" {
+		s pObject=##class(%ZEN.proxyObject).%New()
+		s pObject.children=##class(%ListOfDataTypes).%New()
+		s tObj=##class(%ZEN.proxyObject).%New()
+		s tObj.Namespace=obj.namespace
+		// Class
+		s tObj.Name=""
+		s tObj.DisplayName=..#Class
+		s tObj.Target=..#Class
+		s tObj.isFolder=1
+		d pObject.children.Insert(tObj)
+		// Routine
+		s tObj=##class(%ZEN.proxyObject).%New()
+		s tObj.Name=""
+		s tObj.DisplayName=..#Routine
+		s tObj.Target=..#Routine
+		s tObj.isFolder=1
+		d pObject.children.Insert(tObj)
+		// CSP
+		s tObj=##class(%ZEN.proxyObject).%New()
+		s tObj.Name=""
+		s tObj.DisplayName=..#CSP
+		s tObj.Target=..#CSP
+		s tObj.isFolder=1
+		d pObject.children.Insert(tObj)
+		// Other
+		s tObj=##class(%ZEN.proxyObject).%New()
+		s tObj.Name=""
+		s tObj.DisplayName=..#Other
+		s tObj.Target=..#Other
+		s tObj.isFolder=1
+		d pObject.children.Insert(tObj)	
+		d pObject.%ToJSON()
+	}	
+	elseif Target=..#Class{
+		do ..GetClasses(namespace,SubPackage)
+	}
+	elseif Target=..#Routine{
+		do ..GetRoutines(namespace,SubPackage)
+	}
+	elseif Target=..#CSP{
+		do ..GetCSP(namespace,SubPackage)
+	}
+	elseif Target=..#Other{
+		do ..GetOther(namespace,SubPackage)
+	}
+	Quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetClasses">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>namespace,SubPackage=""</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	#dim lenSubPackage=0
+	s ns=$namespace
+	s $namespace=namespace
+	set pObject=##class(%ZEN.proxyObject).%New()
+	set pObject.children=##class(%ListOfDataTypes).%New()
+	set sql="SELECT * FROM %Dictionary.ClassDefinition " 
+	if SubPackage'="" {
+		set lenSubPackage=$LL($LISTFROMSTRING(SubPackage,"."))
+		set sql=sql_"where ID %STARTSWITH '"_SubPackage_".'"
+	} 
+	set sttm=##class(%SQL.Statement).%New()
+	set sttm.%ObjectSelectMode=1
+	set st=sttm.%Prepare(sql)
+	set res=sttm.%Execute()
+	set tList=""
+	
+	while res.%Next(){
+		s tObj=##class(%ZEN.proxyObject).%New()
+		s tlName=$LISTFROMSTRING(res.%Get("Name"),".")
+		
+		if (($LL(tlName)-lenSubPackage)>1){
+			s tST=1	
+		 	s sp=$LISTTOSTRING($LIST(tlName,1,lenSubPackage+1),".")
+		 	if $LF(tList,sp)'=0{s tST=0}	 	
+		 	if tST {
+			s tObj.isFolder=1
+			s tObj.Target=..#Class
+			s tObj.DisplayName=$LISTTOSTRING($LIST(tlName,lenSubPackage+1,lenSubPackage+1),".")
+			s tObj.Name=$LISTTOSTRING($LIST(tlName,1,lenSubPackage+1),".")
+			do pObject.children.Insert(tObj)
+			s $LIST(tList,$LL(tList)+1)=sp  
+			}
+		}
+		else{
+			s tObj.isFolder=0
+			s tObj.DisplayName=$LISTTOSTRING($LIST(tlName,lenSubPackage+1,*),".")
+			s tObj.Name=res.%Get("Name")
+			s tObj.relativePath=..#Class_"/"_$REPLACE(res.%Get("Name"),".","/")_".CLS"
+			s tObj.Target=..#Class
+			do pObject.children.Insert(tObj)
+		}
+	}
+	do pObject.%ToJSON()
+	s $namespace= ns
+	q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="GetRoutines">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,SubPackage=""</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	s ns=$namespace
+	s $namespace=NameSpace
+	s SubPackagelen=$LL($LISTFROMSTRING(SubPackage,"."))
+	set pObject=##class(%ZEN.proxyObject).%New()
+	set pObject.children=##class(%ListOfDataTypes).%New()
+	set tList=""
+	set sql="SELECT * FROM %Library.RoutineIndex where NOT Name %STARTSWITH '%' and NOT Name %STARTSWITH 'INFORMATION' and Type !='OBJ' "
+	
+	if SubPackage'="" {
+		s sql=sql_" and Name %STARTSWITH '"_SubPackage_".'"
+	}
+	set sttm=##class(%SQL.Statement).%New()
+	set sttm.%ObjectSelectMode=1
+	set st=sttm.%Prepare(sql)
+	set res=sttm.%Execute()
+	while(res.%Next()'=0){
+		s tObj=##class(%ZEN.proxyObject).%New()
+		s Name=res.%Get("Name")
+		s tName=$LISTFROMSTRING(Name,".")
+		s jump=0
+		s tST=1
+		if $ISVALIDNUM($LIST(tName,$LL(tName))){
+			s jump=1
+		}
+		if (($LL(tName)-jump-SubPackagelen)>1){
+			for i=1:1:$LL(tList){
+		 		if ($FIND($LISTTOSTRING($LIST(tName,1,SubPackagelen+1),"."),$LI(tList,i))'=0){
+			 		s tST=0
+			 	}
+		 	}
+		 	if (tST) {
+			s tObj.Name=$LISTTOSTRING($LIST(tName,1,SubPackagelen+1),".")
+			s tObj.DisplayName=$LISTTOSTRING($LIST(tName,SubPackagelen+1,SubPackagelen+1),".")
+			s tObj.isFolder=1
+			s tObj.Target=..#Routine
+			do pObject.children.Insert(tObj)
+			s $LIST(tList,$LL(tList)+1)=$LISTTOSTRING($LIST(tName,1,SubPackagelen+1),".")
+			}
+								
+		}
+		else{
+			s tObj.Name=$LISTTOSTRING($LIST(tName,1,*),".")_"."_res.%Get("Type")
+			s tObj.DisplayName=$LISTTOSTRING($LIST(tName,SubPackagelen+1,*),".")_"."_res.%Get("Type")
+			s tObj.isFolder=0
+			s tObj.relativePath=..#Routine_"/"_$LISTTOSTRING($LIST(tName,1,$LL(tName)-jump),"/")_"."_res.%Get("Type")
+			s tObj.Target=..#Routine
+			do pObject.children.Insert(tObj)
+		}
+		
+	}
+	do pObject.%ToJSON()
+	s $namespace= ns
+	q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="GetOther">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,SubPackage=""</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	s ns=$namespace
+	s $namespace=NameSpace
+	s dashboard="select * from %DeepSee_UserLibrary.FolderItem"
+	s pObject=##class(%ZEN.proxyObject).%New()
+	s pObject.children=##class(%ListOfDataTypes).%New()
+	
+	s sttm=##class(%SQL.Statement).%New()
+	s sttm.%ObjectSelectMode=1
+	s st=sttm.%Prepare(dashboard)
+
+	s res=sttm.%Execute()
+
+	while res.%Next() {
+		s pObj=##class(%ZEN.proxyObject).%New()
+		s pObj.DisplayName=res.%Get("documentName")
+		s pObj.Name=res.%Get("fullName")
+		s pObj.isFolder=0
+		s pObj.relativePath=..#Other_"/"_res.%Get("documentName")
+		s pObj.Target=..#Other
+		d pObject.children.Insert(pObj)
+
+	}
+	d pObject.%ToJSON() 	
+	s $namespace=ns
+	q 1
+]]></Implementation>
+</Method>
+
+<Method name="GetCSP">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,SubPackage=""</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK	
+	s ns=$namespace
+	s $namespace=NameSpace
+	set pObject=##class(%ZEN.proxyObject).%New()
+	set pObject.children=##class(%ListOfDataTypes).%New()
+	if SubPackage=""{
+		s App =##class(%ResultSet).%New("%CSP.Apps:CSPAppList")
+		d App.Execute()
+		while App.Next() {
+			s tObj=##class(%ZEN.proxyObject).%New()
+			s tObj.DisplayName=App.Get("AppUrl")
+			s tObj.Name=App.Get("AppUrl")
+			s tObj.Target=..#CSP
+			s tObj.isFolder=1 
+		 	s st=pObject.children.Insert(tObj)
+		}
+	}
+	else{
+		if ($list($$getapp^%SYS.cspServer(SubPackage_"/",.path),34)=""){
+			s res =##class(%ResultSet).%New("%Library.File:FileSet")
+			If $E(SubPackage,$L(SubPackage))'="/" {s SubPackage=SubPackage_"/"}
+			d res.Execute($$GetFilename^%apiCSP(SubPackage))
+			while res.Next() {
+				If $E(SubPackage,$L(SubPackage))'="/" {s SubPackage=SubPackage_"/"}
+				s tObj=##class(%ZEN.proxyObject).%New()
+				s tObj.DisplayName=res.Get("ItemName")
+				s tObj.Name=SubPackage_res.Get("ItemName")
+				s tObj.isFolder=1
+				s tObj.Target=..#CSP
+				if res.Get("Type")="F"{
+					s tObj.isFolder=0
+					s tObj.relativePath=..#CSP_SubPackage_res.Get("ItemName")
+				}
+			 	s st=pObject.children.Insert(tObj)
+			}
+			/*s res =##class(%ResultSet).%New("%CSP.Apps:CSPFileSet")
+			d res.Execute(SubPackage)
+			while res.Next() {
+				If $E(SubPackage,$L(SubPackage))'="/" {s SubPackage=SubPackage_"/"}
+				s tObj=##class(%ZEN.proxyObject).%New()
+				s tObj.DisplayName=res.Get("Name")
+				s tObj.Name=SubPackage_res.Get("Name")
+				s tObj.isFolder=1
+				s tObj.Target=..#CSP
+				if res.Get("Type")="F"{
+					s tObj.isFolder=0
+					s tObj.relativePath=..#CSP_SubPackage_res.Get("Name")
+				}
+			 	s st=pObject.children.Insert(tObj)
+			}*/
+		}
+	}
+	do pObject.%ToJSON()
+	s $namespace=ns
+	Quit st
+]]></Implementation>
+</Method>
+</Class>
 
 
 
@@ -1734,47 +2462,6 @@ Replace "%" -> "@"]]></Description>
 </Class>
 
 
-<Routine name="Untitled1" type="INT" languagemode="0" generated="1" timestamp="63487,70192.209434"><![CDATA[
-Привет
-]]></Routine>
-
-
-<Routine name="Untitled1" type="MAC" languagemode="0" timestamp="63487,70192.174321"><![CDATA[
-Привет
-]]></Routine>
-
-
-<Routine name="Untitled12" type="BAS" languagemode="9" timestamp="63470,54795.440531"><![CDATA[
-'4eger5g
-'Привет
-]]></Routine>
-
-
-<Routine name="Untitled2" type="INC" timestamp="63459,42508.874515"><![CDATA[
-]]></Routine>
-
-
-<Routine name="Untitled3" type="INT" languagemode="0" timestamp="63459,42522.682972"><![CDATA[
-]]></Routine>
-
-
-<Routine name="Untitled5.Test" type="INT" languagemode="0" timestamp="63459,44770.843658"><![CDATA[
-]]></Routine>
-
-
-<Routine name="Untitled6.Test.2" type="INC" timestamp="63459,44918.825217"><![CDATA[
-]]></Routine>
-
-
-<Routine name="Untitled7.Test.w" type="INC" timestamp="63459,44955.202416"><![CDATA[
-]]></Routine>
-
-
-<Routine name="Untitled8.3.Test" type="INC" timestamp="63460,42483.910128"><![CDATA[
-///test
-]]></Routine>
-
-
 <Class name="WEB.Broker">
 <Super>%CSP.REST</Super>
 <TimeChanged>63476,58435.599281</TimeChanged>
@@ -1822,636 +2509,4 @@ Replace "%" -> "@"]]></Description>
 </Class>
 
 
-
-
-
-
-<Class name="csp.test.test2.untitled1">
-<Hidden>1</Hidden>
-<Import>User</Import>
-<Language>cache</Language>
-<ProcedureBlock>0</ProcedureBlock>
-<Super>%CSP.Page</Super>
-<TimeChanged>63475,82430.521206</TimeChanged>
-<TimeCreated>63475,82430.518755</TimeCreated>
-<GeneratedBy>/csp/mdg-dev/Test/Test2/Untitled1.CSP</GeneratedBy>
-
-<Method name="OnPage">
-<ClassMethod>1</ClassMethod>
-<CodeMode>code</CodeMode>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
-	Do ..OnPageCSPROOT()
-	Quit $$$OK
-]]></Implementation>
-</Method>
-
-<Method name="OnPageBODY">
-<ClassMethod>1</ClassMethod>
-<CodeMode>code</CodeMode>
-<ReturnType>%Boolean</ReturnType>
-<Implementation><![CDATA[
-	Write "<body>"
-	Write !,!,"		"
-	Write "<!-- Put your page code here -->"
-	Write !,"		My page body",!
-	Write "</body>"
-]]></Implementation>
-</Method>
-
-<Method name="OnPageCSPROOT">
-<ClassMethod>1</ClassMethod>
-<CodeMode>code</CodeMode>
-<ReturnType>%Boolean</ReturnType>
-<Implementation><![CDATA[	Do ..OnPageHTML()
-]]></Implementation>
-</Method>
-
-<Method name="OnPageHEAD">
-<ClassMethod>1</ClassMethod>
-<CodeMode>code</CodeMode>
-<ReturnType>%Boolean</ReturnType>
-<Implementation><![CDATA[
-	Write "<head>"
-	Write !,!,"<!-- Put your page Title here -->"
-	Write !,"<title>	Cache Server Page </title>",!
-	Write !,"</head>"
-]]></Implementation>
-</Method>
-
-<Method name="OnPageHTML">
-<ClassMethod>1</ClassMethod>
-<CodeMode>code</CodeMode>
-<ReturnType>%Boolean</ReturnType>
-<Implementation><![CDATA[
-	Write "<html>"
-	Write !
-	Do ..OnPageHEAD()
-	Write !,!
-	Do ..OnPageBODY()
-	Write !,"</html>"
-]]></Implementation>
-</Method>
-
-<Parameter name="CSPFILE">
-<Default>c:\intersystems\cache\csp\mdg-dev\Test\Test2\Untitled1.CSP</Default>
-</Parameter>
-
-<Parameter name="CSPURL">
-<Default>/csp/mdg-dev/Test/Test2/Untitled1.CSP</Default>
-</Parameter>
-
-<Parameter name="FileTimestamp">
-<Default>63459,60589</Default>
-</Parameter>
-</Class>
-
-
-<Class name="csp.test.untitled2">
-<Hidden>1</Hidden>
-<Import>User</Import>
-<Language>cache</Language>
-<ProcedureBlock>0</ProcedureBlock>
-<Super>%CSP.Page</Super>
-<TimeChanged>63475,82430.531693</TimeChanged>
-<TimeCreated>63475,82430.530136</TimeCreated>
-<GeneratedBy>/csp/mdg-dev/Test/Untitled2.CSP</GeneratedBy>
-
-<Method name="OnPage">
-<ClassMethod>1</ClassMethod>
-<CodeMode>code</CodeMode>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
-	Do ..OnPageCSPROOT()
-	Quit $$$OK
-]]></Implementation>
-</Method>
-
-<Method name="OnPageBODY">
-<ClassMethod>1</ClassMethod>
-<CodeMode>code</CodeMode>
-<ReturnType>%Boolean</ReturnType>
-<Implementation><![CDATA[
-	Write "<body>"
-	Write !,!,"		"
-	Write "<!-- Put your page code here -->"
-	Write !,"		My page body",!
-	Write "</body>"
-]]></Implementation>
-</Method>
-
-<Method name="OnPageCSPROOT">
-<ClassMethod>1</ClassMethod>
-<CodeMode>code</CodeMode>
-<ReturnType>%Boolean</ReturnType>
-<Implementation><![CDATA[	Do ..OnPageHTML()
-]]></Implementation>
-</Method>
-
-<Method name="OnPageHEAD">
-<ClassMethod>1</ClassMethod>
-<CodeMode>code</CodeMode>
-<ReturnType>%Boolean</ReturnType>
-<Implementation><![CDATA[
-	Write "<head>"
-	Write !,!,"<!-- Put your page Title here -->"
-	Write !,"<title>	Cache Server Page </title>",!
-	Write !,"</head>"
-]]></Implementation>
-</Method>
-
-<Method name="OnPageHTML">
-<ClassMethod>1</ClassMethod>
-<CodeMode>code</CodeMode>
-<ReturnType>%Boolean</ReturnType>
-<Implementation><![CDATA[
-	Write "<html>"
-	Write !
-	Do ..OnPageHEAD()
-	Write !,!
-	Do ..OnPageBODY()
-	Write !,"</html>"
-]]></Implementation>
-</Method>
-
-<Parameter name="CSPFILE">
-<Default>c:\intersystems\cache\csp\mdg-dev\Test\Untitled2.CSP</Default>
-</Parameter>
-
-<Parameter name="CSPURL">
-<Default>/csp/mdg-dev/Test/Untitled2.CSP</Default>
-</Parameter>
-
-<Parameter name="FileTimestamp">
-<Default>63459,60610</Default>
-</Parameter>
-</Class>
-
-
-<Class name="csp.untitled3">
-<Hidden>1</Hidden>
-<Import>User</Import>
-<Language>cache</Language>
-<ProcedureBlock>0</ProcedureBlock>
-<Super>%CSP.Page</Super>
-<TimeChanged>63460,42111.649336</TimeChanged>
-<TimeCreated>63460,42111.647804</TimeCreated>
-<GeneratedBy>/csp/mdg-dev/Untitled3.CSP</GeneratedBy>
-
-<Method name="OnPage">
-<ClassMethod>1</ClassMethod>
-<CodeMode>code</CodeMode>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
-	Do ..OnPageCSPROOT()
-	Quit $$$OK
-]]></Implementation>
-</Method>
-
-<Method name="OnPageBODY">
-<ClassMethod>1</ClassMethod>
-<CodeMode>code</CodeMode>
-<ReturnType>%Boolean</ReturnType>
-<Implementation><![CDATA[
-	Write "<body>"
-	Write !,!,"		"
-	Write "<!-- Put your page code here -->"
-	Write !,"		My page body",!
-	Write "</body>"
-]]></Implementation>
-</Method>
-
-<Method name="OnPageCSPROOT">
-<ClassMethod>1</ClassMethod>
-<CodeMode>code</CodeMode>
-<ReturnType>%Boolean</ReturnType>
-<Implementation><![CDATA[	Do ..OnPageHTML()
-]]></Implementation>
-</Method>
-
-<Method name="OnPageHEAD">
-<ClassMethod>1</ClassMethod>
-<CodeMode>code</CodeMode>
-<ReturnType>%Boolean</ReturnType>
-<Implementation><![CDATA[
-	Write "<head>"
-	Write !,!,"<!-- Put your page Title here -->"
-	Write !,"<title>	Cache Server Page </title>",!
-	Write !,"</head>"
-]]></Implementation>
-</Method>
-
-<Method name="OnPageHTML">
-<ClassMethod>1</ClassMethod>
-<CodeMode>code</CodeMode>
-<ReturnType>%Boolean</ReturnType>
-<Implementation><![CDATA[
-	Write "<html>"
-	Write !
-	Do ..OnPageHEAD()
-	Write !,!
-	Do ..OnPageBODY()
-	Write !,"</html>"
-]]></Implementation>
-</Method>
-
-<Parameter name="CSPFILE">
-<Default>c:\intersystems\cache\csp\mdg-dev\Untitled3.CSP</Default>
-</Parameter>
-
-<Parameter name="CSPURL">
-<Default>/csp/mdg-dev/Untitled3.CSP</Default>
-</Parameter>
-
-<Parameter name="FileTimestamp">
-<Default>63459,60622</Default>
-</Parameter>
-</Class>
-
-
-<Class name="csp.untitled4">
-<Hidden>1</Hidden>
-<Import>User</Import>
-<Language>cache</Language>
-<ProcedureBlock>0</ProcedureBlock>
-<Super>%CSP.Page</Super>
-<TimeChanged>63460,42111.657596</TimeChanged>
-<TimeCreated>63460,42111.656135</TimeCreated>
-<GeneratedBy>/csp/mdg-dev/Untitled4.CSP</GeneratedBy>
-
-<Method name="OnPage">
-<ClassMethod>1</ClassMethod>
-<CodeMode>code</CodeMode>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
-	Do ..OnPageCSPROOT()
-	Quit $$$OK
-]]></Implementation>
-</Method>
-
-<Method name="OnPageBODY">
-<ClassMethod>1</ClassMethod>
-<CodeMode>code</CodeMode>
-<ReturnType>%Boolean</ReturnType>
-<Implementation><![CDATA[
-	Write "<body>"
-	Write !,!,"		"
-	Write "<!-- Put your page code here -->"
-	Write !,"		My page body",!
-	Write "</body>"
-]]></Implementation>
-</Method>
-
-<Method name="OnPageCSPROOT">
-<ClassMethod>1</ClassMethod>
-<CodeMode>code</CodeMode>
-<ReturnType>%Boolean</ReturnType>
-<Implementation><![CDATA[	Do ..OnPageHTML()
-]]></Implementation>
-</Method>
-
-<Method name="OnPageHEAD">
-<ClassMethod>1</ClassMethod>
-<CodeMode>code</CodeMode>
-<ReturnType>%Boolean</ReturnType>
-<Implementation><![CDATA[
-	Write "<head>"
-	Write !,!,"<!-- Put your page Title here -->"
-	Write !,"<title>	Cache Server Page </title>",!
-	Write !,"</head>"
-]]></Implementation>
-</Method>
-
-<Method name="OnPageHTML">
-<ClassMethod>1</ClassMethod>
-<CodeMode>code</CodeMode>
-<ReturnType>%Boolean</ReturnType>
-<Implementation><![CDATA[
-	Write "<html>"
-	Write !
-	Do ..OnPageHEAD()
-	Write !,!
-	Do ..OnPageBODY()
-	Write !,"</html>"
-]]></Implementation>
-</Method>
-
-<Parameter name="CSPFILE">
-<Default>c:\intersystems\cache\csp\mdg-dev\Untitled4.CSP</Default>
-</Parameter>
-
-<Parameter name="CSPURL">
-<Default>/csp/mdg-dev/Untitled4.CSP</Default>
-</Parameter>
-
-<Parameter name="FileTimestamp">
-<Default>63459,60638</Default>
-</Parameter>
-</Class>
-
-
-
-
-<Class name="sc.min">
-<Description><![CDATA[
-Минимально-функциональный плагин контроля версий для студии Cach&#233; 5.0 - 2014
-В версии 5.021 не вызываются обработчики события удаления
-Установка плагина <example>
-d ##class(sc.min).workdir("c:\temp\") ;устанавливаем рабочую директорию
-d ##class(sc.min).ignore("%") ;игнорируем системные классы
-d ##class(sc.min).ignore("sc.") ;игнорируем сами себя
-</example>]]></Description>
-<Super>%Studio.SourceControl.Base</Super>
-<TimeChanged>63432,40342.894582</TimeChanged>
-<TimeCreated>63432,40342.894582</TimeCreated>
-
-<Parameter name="STORAGE">
-<Description>
-Глобаль для хранения настроек плагина</Description>
-<Default>^sc</Default>
-</Parameter>
-
-<Parameter name="Flags">
-<Description><![CDATA[
-Used to control which dialogs appear in Studio, if the position is '1'
-then this dialog will appears and if it is '0' then the dialog will not
-appear and it will assume that the answer to the dialog was to either accept it
-or say yes, depending on the dialog. The dialog are:<ul>
-<li>1 : Present dialog on check in</li>
-<li>2 : Present dialog on check out</li>
-<li>3 : Ask to add new item to source control</li>
-<li>4 : Ask to remove deleted item from source control</li></ul>]]></Description>
-<Type>STRING</Type>
-<Default>0000</Default>
-</Parameter>
-
-<Method name="workdir">
-<Description><![CDATA[
-Установка/получение рабочей директории плагина.
-По умолчанию используется директория с базой области.
-<example>
-d ##class(sc.min).workdir("c:\temp\") ;установка рабочей директории
-w ##class(sc.min).workdir() ;получение настройки
-#; одновременно установка и получение рабочей директории
-s wd = ##class(sc.min).workdir("c:\temp") 
-</example>]]></Description>
-<ClassMethod>1</ClassMethod>
-<FormalSpec>path:%String</FormalSpec>
-<ReturnType>%String</ReturnType>
-<Implementation><![CDATA[
-     s wds = ..#STORAGE, default = $zu(12,"")
-     if $d(path){ //set mode
-      s path=$g(path) s:path="" path=default
-      s:$e(path,$l(path))'="\" path=path_"\" ;директория должна быть указана в формате:  c:\temp\
-      s @wds=path Q path
-     } else { //get mode
-      s wd=$g( @wds ) Q:wd'="" wd Q default
-     }
-]]></Implementation>
-</Method>
-
-<Method name="igns">
-<Description>
-Вернет имя узла глобали для хранение настроек 
-игнорируемых масок наименований модулей кода.</Description>
-<ClassMethod>1</ClassMethod>
-<CodeMode>expression</CodeMode>
-<Private>1</Private>
-<ReturnType>%String</ReturnType>
-<Implementation><![CDATA[..#STORAGE_"(""skip"")"
-]]></Implementation>
-</Method>
-
-<Method name="ignore">
-<Description><![CDATA[
-Добавление маски / получение масок игнорирования в настройки плагина.
-<example>
-s sc = ##class(sc.min).ignore("%") ;плагин будет игнорировать модули кода, начинающиеся с "%"
-d ##class(sc.min).ignore( , .ignored ) ;в массиве <var>ignored</var> будут маски плагина
-d ##class(sc.min).ignore( "sc." , .ignored ) ;добавление новой маски и получение массива
-</example>]]></Description>
-<ClassMethod>1</ClassMethod>
-<FormalSpec><![CDATA[mask:%String,&arr:%String=""]]></FormalSpec>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
-    s gln=..igns() if $d(mask) { //set mode
-       s @gln@(mask)="" 
-    } 
-    m arr = @gln
-    Q $$$OK
-]]></Implementation>
-</Method>
-
-<Method name="ignored">
-<Description><![CDATA[
-проверка имени программного модуля на игнорирование
-<example>
-w ##class(sc.min).ignored("sc.min.CLS")
-</example>]]></Description>
-<ClassMethod>1</ClassMethod>
-<FormalSpec>code:%String</FormalSpec>
-<ReturnType>%Boolean</ReturnType>
-<Implementation><![CDATA[
-    s arr = ..ignore(,.arr), ignored=0
-    s mask="" for { s mask=$o(arr(mask)) Q:mask=""
-        s pos = $f(code, mask) if pos=0 continue
-        s check = $l( mask ) + 1
-        if pos = check  { ;starts with
-             s ignored=1 Q  
-        }
-    }
-    Q ignored
-]]></Implementation>
-</Method>
-
-<Method name="code2file">
-<Description>
-Преобразование имени модуля в имя файла
-Совместим по логике с примерами Интерсистемс, и плагином от Павла Крехулы</Description>
-<ClassMethod>1</ClassMethod>
-<FormalSpec>code:%String</FormalSpec>
-<ReturnType>%String</ReturnType>
-<Implementation><![CDATA[
- #define parse(%code) s len=$l(%code,"."), name=$P(%code,".",1,len-1), ext=$P(%code,".",len)
- s len=0, (name,ext)=""
- $$$parse(code)
- s path = "_"_ext_"\"_$tr(name,".","\")_".xml"
- Q ..workdir()_path
-]]></Implementation>
-</Method>
-
-<Method name="generated">
-<Description><![CDATA[
-Определяем является ли модуль сгенерированным CLS -> INT
-Is generated?]]></Description>
-<ClassMethod>1</ClassMethod>
-<FormalSpec>code:%String</FormalSpec>
-<ReturnType>%String</ReturnType>
-<Implementation><![CDATA[
-    s sequence=$lb("CSP","CLS","MAC","INT")
-    
-    s len=0,name="",ext=""
-    #define parse(%code) s len=$l(%code,"."), name=$P(%code,".",1,len-1), ext=$P(%code,".",len)
-        
-    $$$parse(code) s codelvl=$LF(sequence,ext)
-    
-    s src=##class(%RoutineMgr).GetOther(name,ext,-1) QUIT:src="" 0 ;created by user
-    
-    #;now ext for src
-    $$$parse(src) s srclvl=$LF(sequence,ext) 
-    
-    if srclvl<codelvl QUIT 1 ;generated
-    
-    Q 0 ;created by user
-]]></Implementation>
-</Method>
-
-<Method name="handler">
-<Description>
-handler for studio events</Description>
-<ClassMethod>1</ClassMethod>
-<FormalSpec>code:%String,event:%String=""</FormalSpec>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
-   
-    s skip=0, txt=""
-    if ..ignored(code) {
-        s txt="IGNORED "_code, skip=1
-    } elseif ##class(%RoutineMgr).IsCSPName(code){
-        s txt="CSPNAME "_code, skip=1
-    } elseif ..generated(code) {
-        s txt="GENERATED "_code, skip=1
-    } 
-    
-    #define msg(%txt) s io=$io u 0 w !,%txt u io
-    
-    if skip {
-      $$$msg(txt) Q $$$OK      
-    }
-    
-    s file=..code2file(code) 
-    
-    s exist=##class(%File).Exists(file), filets=""
-    if exist {
-        s filetsh=##class(%Library.File).GetFileDateModified(file) ;horolog
-        s filets=$zdt(filetsh,3)
-    } 
-    s codets=##class(%RoutineMgr).TS(code)
-    
-    Q:codets=filets $$$OK ;timestamps equal
-    
-    s txt="", sc=1
-    if codets]filets { ;export from database
-        
-        s dir = ##class(%File).GetDirectory(file)
-        s sc= ##class(%File).CreateDirectoryChain(dir) ;check
-        s sc=$system.OBJ.Export(code,file,"-d /diffexport") 
-        s txt=code_" -> "_file
-       
-    } elseif filets]codets { ;import from file
-        
-        #; Низкоуровневое API
-        #; Flags: -d - not display, -l - no lock
-        #;s sc=$$Import^%occSAX(filename,"fv-d-l")
-        #;s sc=$$Import^%apiRTN(filename,"all,replace,nocompile,lock=0",,,,"-d")
-        
-        /*
-        * Именно этот фрагмент кода падает с ошибкой 
-        * при РУЧНОМ импорте проекта через Studio
-        * ОШИБКА #6301: Ошибка анализатора SAX XML: <NULL VALUE>ParseFileBoot+25^%occSAX
-        * Студия ставит блокировку на выбранные классы, запускает импорт
-        * и генерирует события, вызывающие импорт
-        */
-
-        #; Flags: -d (not display), -l (no lock)
-        s sc=$system.OBJ.Load(file,"-d-l")  
-        s txt=file_" -> "_code
-        
-  }
-  
-    s io=$io u 0 w !,txt     
-    d:$$$ISERR(sc) $system.OBJ.DisplayError(sc)
-    u io  
-    Q sc
-]]></Implementation>
-</Method>
-
-<Method name="export1">
-<Description>
-Первый экспорт всех классов из области</Description>
-<ClassMethod>1</ClassMethod>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
-    
-    s rs=##class(%ResultSet).%New("%Dictionary.ClassDefinition:Summary")
-    s sc=rs.Execute() 
-    for { s sc=rs.Next() Q:'sc
-      
-      #;проверка на пропускаемые и генерируемые
-      s cls=$g(rs.Data("Name")), code=cls_".CLS"
-      if ..ignored(cls) continue  
-      if ..generated(code) continue
-      s file=..code2file(code)
-      s sc=$system.OBJ.Export(code,file,"-d /diffexport") 
-      w:+sc !,code," -> ", file
-      
-    }
-    k rs,stm
-    QUIT 1
-    
-    #; низкоуровневый экспорт без перекодировки
-    #;s sc=$$Export^%apiRTN("filename","c:\temp\DFPRK.INT","","WNSK\RAW\","-d /diffexport",.err)
-]]></Implementation>
-</Method>
-
-<Method name="OnBeforeLoad">
-<Description>
-Import the file from the external format into Cache.
-This is called before the actual load of data to give the chance
-to load the item from an external format.</Description>
-<FormalSpec>InternalName:%String</FormalSpec>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[    Quit ..handler(InternalName)
-]]></Implementation>
-</Method>
-
-<Method name="OnAfterSave">
-<FormalSpec>InternalName:%String,Object:%RegisteredObject=$$$NULLOREF</FormalSpec>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[    Quit ..handler(InternalName)
-]]></Implementation>
-</Method>
-
-<Method name="OnAfterCompile">
-<Description>
-Есть вероятность, что после компиляции исходник поменяется, например хранение</Description>
-<FormalSpec>InternalName:%String</FormalSpec>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[    Quit ..handler(InternalName)
-]]></Implementation>
-</Method>
-
-<Method name="OnAfterDelete">
-<Description>
-Вызывается при удалении студией кода</Description>
-<FormalSpec>InternalName:%String</FormalSpec>
-<ReturnType>%Status</ReturnType>
-<Implementation><![CDATA[
-    s file=..code2file(InternalName), sc=$$$OK
-    s:##class(%File).Exists(file) sc=##class(%File).Delete(file)
-    s txt=" DELETE "_file
-    s io=$io u 0 w:$$$ISOK(sc) !,txt 
-        if $$$ISERR(sc) {
-             w !,txt
-             d $system.OBJ.DisplayError(sc)
-        }
-    u io
-    Q sc
-]]></Implementation>
-</Method>
-</Class>
-
-
-<Document name="Untitled123.MVB"><![CDATA[
-
-]]></Document></Export>
+</Export>

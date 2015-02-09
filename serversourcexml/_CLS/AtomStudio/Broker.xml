@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="AtomStudio.Broker">
+<Super>%CSP.REST,AtomStudio.Base</Super>
+<TimeCreated>63489,59413.154296</TimeCreated>
+
+<XData name="UrlMap">
+<Data><![CDATA[
+<Routes>
+ 
+    <Route Url="/namespaces" Method="POST" Call="MDG.Request:GetNamespaces" />
+    <Route Url="/namespaces/classlist" Method="POST" Call="MDG.Request:GetClassList" />
+    <Route Url="/namespaces/classname" Method="POST" Call="MDG.Request:GetClass" />
+    <Route Url="/updateclass" Method="POST" Call="MDG.Request:UpdateClass" />
+    <Route Url="/createclass" Method="POST" Call="MDG.Request:CreateClass" />
+    <Route Url="/compilationclass" Method="POST" Call="MDG.Request:CompilationClass" />
+    <Route Url="/deleteclass" Method="POST" Call="MDG.Request:DeleteClass" />
+    <Route Url="/createmethod" Method="POST" Call="MDG.Request:CreateMethod" />
+    <Route Url="/createproperty" Method="POST" Call="MDG.Request:CreateProperty" />
+    <Route Url="/getparameter" Method="POST" Call="MDG.Request:GetParameters"/>
+    <Route Url="/getpath" Method="POST" Call="MDG.Request:GetPath"/>
+    <Route Url="/refresh" Method="POST" Call="MDG.Request:Refresh"/>
+    <Route Url="/saveall" Method="POST" Call="MDG.Request:SaveAll"/>
+    <Route Url="/compileall" Method="POST" Call="MDG.Request:CompileAll"/>
+    
+    <Route Url="/classes" Method="GET" Call="Studio.Remote.TreeView:GetClasses"/>
+    <Route Url="/routines" Method="GET" Call="Studio.Remote.TreeView:GetRoutines"/>
+    <Route Url="/csp" Method="GET" Call="Studio.Remote.TreeView:GetCSP"/>
+    <Route Url="/other" Method="GET" Call="Studio.Remote.TreeView:GetOther"/>
+    
+    <Route Url="/project" Method="GET" Call="Studio.Remote.ProjectView:GetProjects"/>
+    <Route Url="/exist/project" Method="GET" Call="Studio.Remote.ProjectView:ItemExist"/>
+    
+    <Route Url="/source/class" Method="GET" Call="Studio.Remote.Source:GetClass"/>
+    <Route Url="/source/routine" Method="GET" Call="Studio.Remote.Source:GetRoutine"/>
+    <Route Url="/source/csp" Method="GET" Call="Studio.Remote.Source:GetCSP"/>
+    <Route Url="/source/other" Method="GET" Call="Studio.Remote.Source:GetOther"/>
+    
+    <Route Url="/get" Method="GET" Call="Studio.Remote.TreeView:Get"/>
+    <Route Url="/get2" Method="GET" Call="Studio.Remote.ProjectView:M2"/>
+    <Route Url="/get3" Method="GET" Call="Studio.Remote.ProjectView:downloadProject"/>
+    
+    
+    
+    
+    <Route Url="/Tree" 		Method="POST" Call="AtomStudio.RemoteTree:GetTree"/>
+    <Route Url="/Source" 	Method="POST" Call="AtomStudio.FileSource:GetSource"/>
+    
+    <Route Url="/Save" 		Method="POST" Call="AtomStudio.FileSave:Save"/>
+    <Route Url="/Compile" 	Method="POST" Call="AtomStudio.FileSource:GetSource"/>
+    
+    <Route Url="/downloadProject" Method="POST" Call="AtomStudio.Project:downloadProject"/>
+    
+    
+    
+</Routes>
+]]></Data>
+</XData>
+</Class>
+</Export>

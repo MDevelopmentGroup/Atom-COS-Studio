@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="Studio.Remote.ProjectView">
+<Super>%RegisteredObject</Super>
+<TimeCreated>63460,51588.809551</TimeCreated>
+
+<Parameter name="Class">
+<Description>
+Display Name of Class - Class</Description>
+<Default>Class</Default>
+</Parameter>
+
+<Parameter name="Routine">
+<Description>
+Display Name of Routine - Routine</Description>
+<Default>Routine</Default>
+</Parameter>
+
+<Parameter name="CSP">
+<Description>
+Display Name of CSP - CSP</Description>
+<Default>CSP</Default>
+</Parameter>
+
+<Parameter name="Other">
+<Description>
+Display Name of Other - Other</Description>
+<Default>Other</Default>
+</Parameter>
+
+<Query name="Projects">
+<Type>%SQLQuery</Type>
+<SqlQuery>	SELECT * FROM %Studio.Project</SqlQuery>
+</Query>
+
+<Query name="ProjectItems">
+<Type>%SQLQuery</Type>
+<FormalSpec>Project,item="*"</FormalSpec>
+<SqlQuery>	SELECT Name, Type FROM %Studio.ProjectItem WHERE Project=:Project and Name=:item</SqlQuery>
+</Query>
+
+<Method name="GetProjects">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st AS %Status=$$$OK
+	s NameSpace=%request.Get("NameSpace","")
+	s SubPackage=%request.Get("SubPackage","")
+	s ns=$namespace
+	s $namespace=NameSpace
+	s pObject=##class(%ZEN.proxyObject).%New()
+	s pObject.children=##class(%ListOfDataTypes).%New()
+
+	s sql="SELECT * FROM %Studio.Project ORDER BY LastModified DESC"
+	s sttm=##class(%SQL.Statement).%New()
+	s sttm.%ObjectSelectMode=1
+	s st=sttm.%Prepare(sql)
+	s res=sttm.%Execute()
+	while res.%Next() {
+		s pObject.Count=res.%ROWCOUNT
+		s tObj=##class(%ZEN.proxyObject).%New()
+		s tObj.Name=res.%Get("Name")
+		s tObj.DisplayName=res.%Get("Name")
+		s tObj.isFolder=1
+		s tObj.LastModified=res.%Get("LastModified")
+		s st= pObject.children.Insert(tObj)
+	}
+
+	s st=pObject.%ToJSON()
+	s $namespace=ns
+	q st
+]]></Implementation>
+</Method>
+
+<Method name="ItemExist">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	s NameSpace=%request.Get("NameSpace","")
+	s SubPackage=%request.Get("SubPackage","")
+	s Name=%request.Get("Name","")
+	s ns=$namespace
+	s $namespace=NameSpace
+	s pObject=##class(%ZEN.proxyObject).%New()
+	s pObject.Status=0
+
+	set sql="SELECT Name, Type "_
+			"FROM %Studio.ProjectItem "_
+			"WHERE Project='"_SubPackage_"' and "_
+			"Name='"_Name_"' or "_
+			"Name=$LIST($LISTFROMSTRING('"_Name_"','.'),1) and Type='PKG'"
+
+	s sttm=##class(%SQL.Statement).%New()
+	s sttm.%ObjectSelectMode=1
+	s st=sttm.%Prepare(sql)
+	s res=sttm.%Execute()
+	while res.%Next() {
+		s pObject.Status=1
+	}
+	
+
+	do pObject.%ToJSON()
+	s $namespace=ns
+	Q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="downloadProject1">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	//$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+	s NameSpace=%request.Get("NameSpace","")
+	s SubPackage=%request.Get("SubPackage","")
+	s Name=%request.Get("Name","")
+	
+	s ns=$namespace
+	s $namespace=NameSpace
+	s pObject=##class(%ZEN.proxyObject).%New()
+	set pObject.children=##class(%ListOfDataTypes).%New()
+	s sqlProject="SELECT Name, Type "_
+				 "FROM %Studio.ProjectItem "_
+				 "WHERE Project='"_SubPackage_"'"
+				
+	s sttm=##class(%SQL.Statement).%New()
+	s sttm.%ObjectSelectMode=1
+	s st=sttm.%Prepare(sqlProject)
+	s res=sttm.%Execute()
+	while res.%Next() {
+		
+		//s tObj.Source=##class(%Stream.TmpBinary).%New()
+		s t=##class(%Stream.TmpBinary).%New()
+		if (res.%Get("Type")="MAC"){
+			s tObj=##class(%ZEN.proxyObject).%New()
+			//w res.%Get("Name"),!
+			s temp=##class(%Library.Routine).%OpenId(res.%Get("Name"))
+	
+			s tObj.Source=$System.Encryption.Base64Encode(temp.Read(temp.Size))
+			s tObj.Name=res.%Get("Name")
+			s tName=$LISTFROMSTRING(res.%Get("Name"),".")
+			s jump=1
+			if $ISVALIDNUM($LIST(tName,$LL(tName)-1)){s jump=2}
+			s tObj.relativePath=..#Routine_"/"_$LISTTOSTRING($LIST(tName,1,$LL(tName)-jump),"/")_"."_$LISTTOSTRING($LIST(tName,*-jump+1,*),".")
+			d pObject.children.Insert(tObj)		
+		}
+		elseif (res.%Get("Type")="GBL"){}
+		elseif (res.%Get("Type")="PKG"){
+
+			//w res.%Get("Name"),!
+			set sql="SELECT * FROM %Dictionary.ClassDefinition "_
+					"where ID %STARTSWITH '"_res.%Get("Name")_".'"
+			set crst=##class(%SQL.Statement).%New()
+			set crst.%ObjectSelectMode=1
+			set st=crst.%Prepare(sql)
+			set cRes=crst.%Execute()	
+			while cRes.%Next(){
+				s tObj=##class(%ZEN.proxyObject).%New()
+				w " --- ",cRes.%Get("Name"),!
+				s st=##class(%Compiler.UDL.TextServices).GetTextAsString(NameSpace,cRes.%Get("Name"),.tText,)
+				s tObj.Source=$System.Encryption.Base64Encode($ZCONVERT(tText,"O","UTF8"))
+				s tName=$LISTFROMSTRING(cRes.%Get("Name"),".")	
+				s tObj.relativePath=..#Class_"/"_$LISTTOSTRING($LIST(tName,1,$LL(tName)-1),"/")_"/"_$LISTTOSTRING($LIST(tName,*,*),".")_".CLS"
+				d pObject.children.Insert(tObj)
+			}
+		}
+		elseif (res.%Get("Type")="DIR"){}
+		elseif (res.%Get("Type")="CLS"){
+			s tObj=##class(%ZEN.proxyObject).%New()
+			if ##class(%Dictionary.ClassDefinition).%ExistsId(res.%Get("Name")){
+				//w res.%Get("Name"),!
+				s st=##class(%Compiler.UDL.TextServices).GetTextAsString(NameSpace,res.%Get("Name"),.tText,)
+				s tObj.Source=$System.Encryption.Base64Encode($ZCONVERT(tText,"O","UTF8"))
+				s tName=$LISTFROMSTRING(res.%Get("Name"),".")	
+				s tObj.relativePath=..#Class_"/"_$LISTTOSTRING($LIST(tName,1,$LL(tName)-1),"/")_"/"_$LISTTOSTRING($LIST(tName,*,*),".")_"."_res.%Get("Type")
+				d pObject.children.Insert(tObj)
+			}
+		}
+		elseif (res.%Get("Type")="CSP"){}
+	}
+	
+
+	//do pObject.%ToJSON()
+	s $namespace=ns
+	Q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="downloadProject">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	//$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+	s NameSpace=%request.Get("NameSpace","")
+	s SubPackage=%request.Get("SubPackage","")
+	s Name=%request.Get("Name","")
+	
+
+	
+	s pObject=##class(%ZEN.proxyObject).%New()
+	set pObject.children=##class(%ListOfDataTypes).%New()
+	s ns=$namespace
+	s $namespace=NameSpace
+	s res=##class(%ResultSet).%New("%Studio.Project:ProjectItemsList")
+	d res.Execute(SubPackage)
+	s $namespace=ns
+	while res.Next(){ 
+		//w res.Get("Name"),"  ",res.Get("Type"),"  ",res.Get("InSourceControl"),"  ",res.Get("Package"),"  ",res.Get("CSPApp"),!
+		if (res.Get("Type")="CLS"){
+			if ##class(%Dictionary.ClassDefinition).%ExistsId(res.Get("Name")){
+				s tObj=##class(%ZEN.proxyObject).%New()
+				s st=##class(%Compiler.UDL.TextServices).GetTextAsString(NameSpace,res.Get("Name"),.tText,)
+				s tObj.Source=$System.Encryption.Base64Encode($ZCONVERT(tText,"O","UTF8"))
+				s tName=$LISTFROMSTRING(res.Get("Name"),".")
+				s tObj.relativePath=..#Class_"/"_$LISTTOSTRING($LIST(tName,1,$LL(tName)-1),"/")_"/"_$LISTTOSTRING($LIST(tName,*,*),".")_"."_res.%Get("Type")
+				d pObject.children.Insert(tObj)
+			}
+		}
+		elseif (res.Get("Type")="MAC"){
+			if (##class(%Routine).%ExistsId(res.Get("Name"))){
+				s tObj=##class(%ZEN.proxyObject).%New()
+				s temp=##class(%Library.Routine).%OpenId(res.Get("Name"))
+				s tObj.Source=$System.Encryption.Base64Encode($ZCONVERT(temp.Read(temp.Size),"O","UTF8"))
+				s tObj.Name=res.Get("Name")
+				s tName=$LISTFROMSTRING(res.Get("Name"),".")
+				s jump=1
+				if $ISVALIDNUM($LIST(tName,$LL(tName)-1)){s jump=2}
+				s tObj.relativePath=..#Routine_"/"_$LISTTOSTRING($LIST(tName,1,$LL(tName)-jump),"/")_"."_$LISTTOSTRING($LIST(tName,*-jump+1,*),".")
+				d pObject.children.Insert(tObj) 
+			}
+
+		}
+		elseif (res.Get("Type")="PKG"){}
+		elseif (res.Get("Type")="DIR"){
+			//w "DIR",!
+			if ($list($$getapp^%SYS.cspServer("/"_res.Get("Name")_"/",.path),34)=""){
+			do ..File(res.Get("Name"),.pObject)
+			}
+		}
+		elseif (res.Get("Type")="CSP"){
+			s tObj=##class(%ZEN.proxyObject).%New()
+			s file=##class(%Stream.FileBinary).%New()
+			s file.Filename=$$GetFilename^%apiCSP(res.Get("Name"))
+			s tObj.Source=$System.Encryption.Base64Encode($ZCONVERT(file.Read(file.Size),"O","UTF8"))
+			s tObj.relativePath=..#CSP_"/"_res.Get("Name")
+			s tObj.Name=res.Get("Name")
+			d pObject.children.Insert(tObj)  
+		} 
+		elseif (res.Get("Type")="GBL"){} 
+		//w res.Get("Name")," ",res.Get("Type"),!
+	}
+	do pObject.%ToJSON()
+
+
+	Q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="File">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[filename:%String,&pObject:%ZEN.proxyObject]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	//zw file
+	If $E(filename,1)'="/" {s filename="/"_filename}
+	s res =##class(%ResultSet).%New("%CSP.Apps:CSPFileSet")
+	d res.Execute(filename)
+	while res.Next() {
+		if res.Get("Type")="F"{
+			s tObj=##class(%ZEN.proxyObject).%New()
+			s file=##class(%Stream.FileBinary).%New()
+			s file.Filename=$$GetFilename^%apiCSP(filename_"/"_res.Get("Name"))
+			s tObj.Source=$System.Encryption.Base64Encode($ZCONVERT(file.Read(file.Size),"O","UTF8"))
+			s tObj.relativePath=..#CSP_filename_"/"_res.Get("Name")
+			s tObj.Name=res.Get("Name")
+			d pObject.children.Insert(tObj)  
+		}
+		else{
+			do ..File(filename_"/"_res.Get("Name"),.pObject)
+		}
+	}
+	Quit $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="M1">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>dir</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	s ns=$namespace
+	s $namespace="%SYS"
+	//k csp s csp = ##class(Security.Applications).Get(dir,.csp)
+	//s Path=$g(csp("Path"))
+	//zw Path
+	
+	//s t=##class(%CSP.Apps).CSPFileSetExecute(.ttt,dir)
+	//zw ttt
+	
+	s res1 =##class(%ResultSet).%New("%CSP.Apps:CSPAppList")
+	d res1.Execute()
+		while res1.Next() {
+		w res1.Get("AppUrl"),!
+	}
+	s res =##class(%ResultSet).%New("%CSP.Apps:CSPFileSet")
+	d res.Execute(dir)
+	// w $$GetFilename^%apiCSP("/csp/broker/cover"_"/")
+	while res.Next() {
+		//w res.Get("Name")," ",res.Get("Type"),!
+	}
+	s $namespace=ns
+]]></Implementation>
+</Method>
+
+<Method name="M2">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	set NameSpace=%request.Get("NameSpace","")
+	set SubPackage=%request.Get("SubPackage","")
+	s ns=$namespace
+	s $namespace=NameSpace
+	set pObject=##class(%ZEN.proxyObject).%New()
+	set pObject.children=##class(%ListOfDataTypes).%New()
+	if SubPackage=""{
+		s App =##class(%ResultSet).%New("%CSP.Apps:CSPAppList")
+		d App.Execute()
+		while App.Next() {
+			s tObj=##class(%ZEN.proxyObject).%New()
+			s tObj.DisplayName=App.Get("AppUrl")
+			s tObj.Name=App.Get("AppUrl")
+			s tObj.isFolder=1 
+		 	s st=pObject.children.Insert(tObj)
+		}
+	}
+	else{
+		s res =##class(%ResultSet).%New("%CSP.Apps:CSPFileSet")
+		d res.Execute(SubPackage)
+		while res.Next() {
+			If $E(SubPackage,$L(SubPackage))'="/" {s SubPackage=SubPackage_"/"}
+			s tObj=##class(%ZEN.proxyObject).%New()
+			s tObj.DisplayName=res.Get("Name")
+			s tObj.Name=SubPackage_res.Get("Name")
+			s tObj.isFolder=1
+			if res.Get("Type")="F"{
+				s tObj.isFolder=0
+				s tObj.relativePath=..#CSP_SubPackage_res.Get("Name")
+			}
+		 	s st=pObject.children.Insert(tObj)
+		}
+	}
+	do pObject.%ToJSON()
+	s $namespace=ns
+	Quit st
+]]></Implementation>
+</Method>
+
+<Method name="NewMethod1">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>daynum</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+Start
+	s temp=$CASE(daynum,1:"Test",2:"Test2",:"entry error")
+	DO @temp
+Test
+  w "1"
+Test2
+	w "2"
+	
+	Q 1
+]]></Implementation>
+</Method>
+</Class>
+</Export>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="AtomStudio.Base">
+<Super>%RegisteredObject</Super>
+<TimeCreated>63489,58239.81369</TimeCreated>
+
+<Parameter name="Replace">
+<Description><![CDATA[
+Replace "%" -> "@" (URL)]]></Description>
+<Default>@</Default>
+</Parameter>
+
+<Parameter name="rFolder">
+<Description><![CDATA[
+	(WebApp)->(Folder)
+Replace "/" -> "@"  ]]></Description>
+<Default>'</Default>
+</Parameter>
+
+<Parameter name="Class">
+<Description>
+Display Name of Class - Class</Description>
+<Default>Class</Default>
+</Parameter>
+
+<Parameter name="Routine">
+<Description>
+Display Name of Routine - Routine</Description>
+<Default>Programs</Default>
+</Parameter>
+
+<Parameter name="CSP">
+<Description>
+Display Name of CSP - CSP</Description>
+<Default>CSP</Default>
+</Parameter>
+
+<Parameter name="Other">
+<Description>
+Display Name of Other - Other</Description>
+<Default>Other</Default>
+</Parameter>
+
+<Property name="ContentType">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Content">
+<Type>%Stream.FileCharacter</Type>
+<Required>1</Required>
+</Property>
+
+<Method name="Write">
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st as %Status=$$$OK
+	//do %response.SetHeader("Content-Type","application/"_..ContentType)
+	//w $ZConvert(..Content.Read(..Content.Size),"I","UTF8")
+	w ..Content.Read(..Content.Size)
+	Quit st
+]]></Implementation>
+</Method>
+</Class>
+</Export>

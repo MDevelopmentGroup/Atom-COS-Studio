@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="Studio.File.Save">
+<Super>%RegisteredObject,Studio.Base</Super>
+<TimeCreated>63464,58038.427053</TimeCreated>
+
+<Method name="Save">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	#dim obj,tObj As %ZEN.proxyObject
+	#dim TempDir,NameSpace,Target As %String=""
+	#dim delimiter As %String="/"
+	$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+	s targetList=$lb(..#Class,..#Routine,..#CSP,..#Other)
+	s sStatus=##class(%ZEN.proxyObject).%New()
+	s sStatus.children=##class(%ListOfDataTypes).%New()
+	s TempDir=obj.TempDir,NameSpace=obj.NameSpace
+	s lenTempDir=$length(TempDir)
+	for i=1:1:obj.children.Size{
+		s tObj=obj.children.GetAt(i)
+		s lPath=$listfromstring($e(tObj.Path,lenTempDir+1,*),delimiter)
+		s jump=2
+		if $LF(targetList,$list(lPath,jump))=0{s jump=3}
+		s Target=$LIST(lPath,jump)
+		
+		if Target=..#Class{	
+			s classname=$LTS($list($LFS($LTS($list(lPath,jump+1,*),"."),"."),1,*-1),".")
+			s st=..SaveClass(classname,tObj.Source,NameSpace,.sStatus)	
+		}
+		elseif Target=..#Routine{
+			s routinename=$LTS($list($LFS($LTS($list(lPath,jump+1,*),"."),"."),1,*-1),".")
+			s st=..SaveRoutine(routinename,tObj.Source,NameSpace,.sStatus)
+		}
+		elseif Target=..#CSP {
+			s path="\"_$LTS($list(lPath,jump+1,*),"\")
+			s st=..SaveCSP(path,tObj.Source,NameSpace,.sStatus)
+		}
+		elseif Target=..#Other{
+			s name=$LTS($list(lPath,jump+1,*),"\")
+			s st=..SaveOther(name,tObj.Source,NameSpace,.sStatus)	
+		}
+	}
+	do sStatus.%ToJSON()
+	Quit st
+]]></Implementation>
+</Method>
+
+<Method name="SaveClass">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[classname:%String,source:%String,namespace:%String,&sStatus:%ZEN.proxyObject]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim isSave,isExists,st As %Status=$$$OK
+	#dim temp As %String=""	
+	s tObj=##class(%ZEN.proxyObject).%New()
+	set isExists=##class(%Dictionary.ClassDefinition).%ExistsId(classname)
+	if ('isExists){
+		set ns=$namespace
+		set $namespace=namespace
+		set newClass = ##class(%Dictionary.ClassDefinition).%New(classname)
+    	set isSave = newClass.%Save()
+    	set $namespace=ns
+	}
+	if (isExists&&isSave){
+		set stream=##class(%Stream.FileBinary).%New()
+	   	set temp=$System.Encryption.Base64Decode($ZConvert(source,"I","UTF8"))
+    	s st= stream.Write(temp)
+    	set st= ##class(%Compiler.UDL.TextServices).SetTextFromStream(namespace, classname, stream)
+    	s tObj.Name=classname
+		s tObj.Status=st
+		if st {s tObj.Status="Saved"}
+		s st=sStatus.children.Insert(tObj)
+	}
+	Quit st
+]]></Implementation>
+</Method>
+
+<Method name="SaveRoutine">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[routinename:%String,source:%String,namespace:%String,&sStatus:%ZEN.proxyObject]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim isExists,isSave,st As %Status=$$$OK
+	#dim temp As %String=""
+	s tObj=##class(%ZEN.proxyObject).%New()
+	set isExists=##class(%Library.Routine).%ExistsId(routinename)
+	if ('isExists){
+		set newRoutine = ##class(%Library.Routine).%New(routinename)
+    	set isSave = newRoutine.%Save()
+	}
+	if (isExists&&isSave){
+	   	set temp=$System.Encryption.Base64Decode($ZConvert(source,"I","UTF8"))
+    	set Routine=##class(%Library.Routine).%OpenId(routinename)
+    	if 'Routine.Generated {
+    		set st= Routine.Write(temp)
+    		set st=Routine.%Save()
+    		set st=Routine.Compile()
+    		s tObj.Name=routinename
+    		s tObj.Status=st
+    		if st {s tObj.Status="Saved"}
+    		s st=sStatus.children.Insert(tObj)
+    	}	
+	}
+	Quit st
+]]></Implementation>
+</Method>
+
+<Method name="SaveCSP">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[path:%String,source:%String,namespace:%String,&sStatus:%ZEN.proxyObject]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	#dim temp As %String=""
+	s file=##class(%Stream.FileBinary).%New()
+	s tObj=##class(%ZEN.proxyObject).%New()
+	s file.Filename=$$GetFilename^%apiCSP(path)
+	s temp=$System.Encryption.Base64Decode($ZConvert(source,"I","UTF8"))
+	s st= file.CopyFrom(temp)
+	s st= file.%Save()
+	s tObj.Name=path
+	s tObj.Status=st
+	if st {s tObj.Status="Saved"}
+	s st=sStatus.children.Insert(tObj)
+	Quit st
+]]></Implementation>
+</Method>
+
+<Method name="SaveOther">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[name:%String,source:%String,namespace:%String,&sStatus:%ZEN.proxyObject]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	#dim temp As %String=""
+	s tObj=##class(%ZEN.proxyObject).%New()
+	s tStream=##class(%Stream.TmpBinary).%New()
+	s temp=$System.Encryption.Base64Decode($ZConvert(source,"I","UTF8"))
+	s st=tStream.Write(temp)
+	s st=##class(%DeepSee.UserLibrary.Utils).%Import(tStream,1,0,,,.pItemsLoaded)
+	s tObj.Name=name
+	s tObj.Status=st
+	if st {s tObj.Status="Saved"}
+	s st=sStatus.children.Insert(tObj)
+	Quit st
+]]></Implementation>
+</Method>
+</Class>
+</Export>

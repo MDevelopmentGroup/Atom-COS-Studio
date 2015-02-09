@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="AtomStudio.RemoteTree">
+<Super>%RegisteredObject,AtomStudio.Base</Super>
+<TimeCreated>63489,60280.574245</TimeCreated>
+
+<Method name="GetTree">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	#dim obj As %ZEN.proxyObject
+	$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+	s ns=$namespace
+	s namespace=obj.namespace
+	s SubPackage=obj.subpackage
+	s Target=obj.target
+
+	if Target="Tree" {
+		s pObject=##class(%ZEN.proxyObject).%New()
+		s pObject.children=##class(%ListOfDataTypes).%New()
+		s tObj=##class(%ZEN.proxyObject).%New()
+		s tObj.Namespace=obj.namespace
+		// Class
+		s tObj.Name=""
+		s tObj.DisplayName=..#Class
+		s tObj.Target=..#Class
+		s tObj.isFolder=1
+		d pObject.children.Insert(tObj)
+		// Routine
+		s tObj=##class(%ZEN.proxyObject).%New()
+		s tObj.Name=""
+		s tObj.DisplayName=..#Routine
+		s tObj.Target=..#Routine
+		s tObj.isFolder=1
+		d pObject.children.Insert(tObj)
+		// CSP
+		s tObj=##class(%ZEN.proxyObject).%New()
+		s tObj.Name=""
+		s tObj.DisplayName=..#CSP
+		s tObj.Target=..#CSP
+		s tObj.isFolder=1
+		d pObject.children.Insert(tObj)
+		// Other
+		s tObj=##class(%ZEN.proxyObject).%New()
+		s tObj.Name=""
+		s tObj.DisplayName=..#Other
+		s tObj.Target=..#Other
+		s tObj.isFolder=1
+		d pObject.children.Insert(tObj)	
+		d pObject.%ToJSON()
+	}	
+	elseif Target=..#Class{
+		do ..GetClasses(namespace,SubPackage)
+	}
+	elseif Target=..#Routine{
+		do ..GetRoutines(namespace,SubPackage)
+	}
+	elseif Target=..#CSP{
+		do ..GetCSP(namespace,SubPackage)
+	}
+	elseif Target=..#Other{
+		do ..GetOther(namespace,SubPackage)
+	}
+	Quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetClasses">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>namespace,SubPackage=""</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	#dim lenSubPackage=0
+	s ns=$namespace
+	s $namespace=namespace
+	set pObject=##class(%ZEN.proxyObject).%New()
+	set pObject.children=##class(%ListOfDataTypes).%New()
+	set sql="SELECT * FROM %Dictionary.ClassDefinition " 
+	if SubPackage'="" {
+		set lenSubPackage=$LL($LISTFROMSTRING(SubPackage,"."))
+		set sql=sql_"where ID %STARTSWITH '"_SubPackage_".'"
+	} 
+	set sttm=##class(%SQL.Statement).%New()
+	set sttm.%ObjectSelectMode=1
+	set st=sttm.%Prepare(sql)
+	set res=sttm.%Execute()
+	set tList=""
+	
+	while res.%Next(){
+		s tObj=##class(%ZEN.proxyObject).%New()
+		s tlName=$LISTFROMSTRING(res.%Get("Name"),".")
+		
+		if (($LL(tlName)-lenSubPackage)>1){
+			s tST=1	
+		 	s sp=$LISTTOSTRING($LIST(tlName,1,lenSubPackage+1),".")
+		 	if $LF(tList,sp)'=0{s tST=0}	 	
+		 	if tST {
+			s tObj.isFolder=1
+			s tObj.Target=..#Class
+			s tObj.DisplayName=$LISTTOSTRING($LIST(tlName,lenSubPackage+1,lenSubPackage+1),".")
+			s tObj.Name=$LISTTOSTRING($LIST(tlName,1,lenSubPackage+1),".")
+			do pObject.children.Insert(tObj)
+			s $LIST(tList,$LL(tList)+1)=sp  
+			}
+		}
+		else{
+			s tObj.isFolder=0
+			s tObj.DisplayName=$LISTTOSTRING($LIST(tlName,lenSubPackage+1,*),".")
+			s tObj.Name=res.%Get("Name")
+			s tObj.relativePath=..#Class_"/"_$REPLACE(res.%Get("Name"),".","/")_".CLS"
+			s tObj.Target=..#Class
+			do pObject.children.Insert(tObj)
+		}
+	}
+	do pObject.%ToJSON()
+	s $namespace= ns
+	q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="GetRoutines">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,SubPackage=""</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	s ns=$namespace
+	s $namespace=NameSpace
+	s SubPackagelen=$LL($LISTFROMSTRING(SubPackage,"."))
+	set pObject=##class(%ZEN.proxyObject).%New()
+	set pObject.children=##class(%ListOfDataTypes).%New()
+	set tList=""
+	set sql="SELECT * FROM %Library.RoutineIndex where NOT Name %STARTSWITH '%' and NOT Name %STARTSWITH 'INFORMATION' and Type !='OBJ' "
+	
+	if SubPackage'="" {
+		s sql=sql_" and Name %STARTSWITH '"_SubPackage_".'"
+	}
+	set sttm=##class(%SQL.Statement).%New()
+	set sttm.%ObjectSelectMode=1
+	set st=sttm.%Prepare(sql)
+	set res=sttm.%Execute()
+	while(res.%Next()'=0){
+		s tObj=##class(%ZEN.proxyObject).%New()
+		s Name=res.%Get("Name")
+		s tName=$LISTFROMSTRING(Name,".")
+		s jump=0
+		s tST=1
+		if $ISVALIDNUM($LIST(tName,$LL(tName))){
+			s jump=1
+		}
+		if (($LL(tName)-jump-SubPackagelen)>1){
+			for i=1:1:$LL(tList){
+		 		if ($FIND($LISTTOSTRING($LIST(tName,1,SubPackagelen+1),"."),$LI(tList,i))'=0){
+			 		s tST=0
+			 	}
+		 	}
+		 	if (tST) {
+			s tObj.Name=$LISTTOSTRING($LIST(tName,1,SubPackagelen+1),".")
+			s tObj.DisplayName=$LISTTOSTRING($LIST(tName,SubPackagelen+1,SubPackagelen+1),".")
+			s tObj.isFolder=1
+			s tObj.Target=..#Routine
+			do pObject.children.Insert(tObj)
+			s $LIST(tList,$LL(tList)+1)=$LISTTOSTRING($LIST(tName,1,SubPackagelen+1),".")
+			}
+								
+		}
+		else{
+			s tObj.Name=$LISTTOSTRING($LIST(tName,1,*),".")_"."_res.%Get("Type")
+			s tObj.DisplayName=$LISTTOSTRING($LIST(tName,SubPackagelen+1,*),".")_"."_res.%Get("Type")
+			s tObj.isFolder=0
+			s tObj.relativePath=..#Routine_"/"_$LISTTOSTRING($LIST(tName,1,$LL(tName)-jump),"/")_"."_res.%Get("Type")
+			s tObj.Target=..#Routine
+			do pObject.children.Insert(tObj)
+		}
+		
+	}
+	do pObject.%ToJSON()
+	s $namespace= ns
+	q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="GetOther">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,SubPackage=""</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	s ns=$namespace
+	s $namespace=NameSpace
+	s dashboard="select * from %DeepSee_UserLibrary.FolderItem"
+	s pObject=##class(%ZEN.proxyObject).%New()
+	s pObject.children=##class(%ListOfDataTypes).%New()
+	
+	s sttm=##class(%SQL.Statement).%New()
+	s sttm.%ObjectSelectMode=1
+	s st=sttm.%Prepare(dashboard)
+
+	s res=sttm.%Execute()
+
+	while res.%Next() {
+		s pObj=##class(%ZEN.proxyObject).%New()
+		s pObj.DisplayName=res.%Get("documentName")
+		s pObj.Name=res.%Get("fullName")
+		s pObj.isFolder=0
+		s pObj.relativePath=..#Other_"/"_res.%Get("documentName")
+		s pObj.Target=..#Other
+		d pObject.children.Insert(pObj)
+
+	}
+	d pObject.%ToJSON() 	
+	s $namespace=ns
+	q 1
+]]></Implementation>
+</Method>
+
+<Method name="GetCSP">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,SubPackage=""</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK	
+	s ns=$namespace
+	s $namespace=NameSpace
+	set pObject=##class(%ZEN.proxyObject).%New()
+	set pObject.children=##class(%ListOfDataTypes).%New()
+	if SubPackage=""{
+		s App =##class(%ResultSet).%New("%CSP.Apps:CSPAppList")
+		d App.Execute()
+		while App.Next() {
+			s tObj=##class(%ZEN.proxyObject).%New()
+			s tObj.DisplayName=App.Get("AppUrl")
+			s tObj.Name=App.Get("AppUrl")
+			s tObj.Target=..#CSP
+			s tObj.isFolder=1 
+		 	s st=pObject.children.Insert(tObj)
+		}
+	}
+	else{
+		if ($list($$getapp^%SYS.cspServer(SubPackage_"/",.path),34)=""){
+			s res =##class(%ResultSet).%New("%Library.File:FileSet")
+			If $E(SubPackage,$L(SubPackage))'="/" {s SubPackage=SubPackage_"/"}
+			d res.Execute($$GetFilename^%apiCSP(SubPackage))
+			while res.Next() {
+				If $E(SubPackage,$L(SubPackage))'="/" {s SubPackage=SubPackage_"/"}
+				s tObj=##class(%ZEN.proxyObject).%New()
+				s tObj.DisplayName=res.Get("ItemName")
+				s tObj.Name=SubPackage_res.Get("ItemName")
+				s tObj.isFolder=1
+				s tObj.Target=..#CSP
+				if res.Get("Type")="F"{
+					s tObj.isFolder=0
+					s tObj.relativePath=..#CSP_SubPackage_res.Get("ItemName")
+				}
+			 	s st=pObject.children.Insert(tObj)
+			}
+			/*s res =##class(%ResultSet).%New("%CSP.Apps:CSPFileSet")
+			d res.Execute(SubPackage)
+			while res.Next() {
+				If $E(SubPackage,$L(SubPackage))'="/" {s SubPackage=SubPackage_"/"}
+				s tObj=##class(%ZEN.proxyObject).%New()
+				s tObj.DisplayName=res.Get("Name")
+				s tObj.Name=SubPackage_res.Get("Name")
+				s tObj.isFolder=1
+				s tObj.Target=..#CSP
+				if res.Get("Type")="F"{
+					s tObj.isFolder=0
+					s tObj.relativePath=..#CSP_SubPackage_res.Get("Name")
+				}
+			 	s st=pObject.children.Insert(tObj)
+			}*/
+		}
+	}
+	do pObject.%ToJSON()
+	s $namespace=ns
+	Quit st
+]]></Implementation>
+</Method>
+</Class>
+</Export>

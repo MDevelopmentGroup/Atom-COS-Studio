@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="Studio.Remote.File">
+<Super>%RegisteredObject</Super>
+<TimeCreated>63462,41191.041104</TimeCreated>
+
+<Property name="ContentType">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Content">
+<Type>%Stream.FileCharacter</Type>
+<Required>1</Required>
+</Property>
+
+<Method name="WriteFile">
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st as %Status=$$$OK
+	do %response.SetHeader("Content-Type","application/"_..ContentType)
+	w $ZConvert(..Content.Read(..Content.Size),"O","UTF8")
+	Quit st
+]]></Implementation>
+</Method>
+</Class>
+</Export>

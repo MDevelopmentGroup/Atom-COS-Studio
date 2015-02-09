@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="Studio.Remote.Source">
+<Super>%RegisteredObject</Super>
+<TimeCreated>63460,39899.380483</TimeCreated>
+
+<Parameter name="Replace">
+<Description><![CDATA[
+Replace "%" -> "@"]]></Description>
+<Default>@</Default>
+</Parameter>
+
+<Method name="GetClass">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	#dim tStream As %Stream.Character
+	
+	s NameSpace=%request.Get("NameSpace","")
+	s Name=%request.Get("Name","")
+	if ($E(Name,1)=..#Replace){
+		set Name=$REPLACE(Name,..#Replace,"%",1,1)
+	}
+	try {
+		if (NameSpace'="")&&(Name'=""){
+			s st=##class(%Compiler.UDL.TextServices).GetTextAsStream(NameSpace,Name,.tStream)	
+			set rFile=##class(Studio.Remote.File).%New()
+        	do rFile.Content.CopyFrom(tStream)
+        	set rFile.ContentType="CLS"
+        	do rFile.Write()
+		}
+	}
+    catch (e) {
+        set st=e.AsStatus()
+    }
+    Q st
+]]></Implementation>
+</Method>
+
+<Method name="GetRoutine">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	s NameSpace=%request.Get("NameSpace","")
+	s Name=%request.Get("Name","")
+	try {
+		if (NameSpace'="")&&(Name'=""){
+			s ns=$namespace
+			s $namespace=NameSpace
+        	s temp=##class(%Routine).%OpenId(Name)
+        	s $namespace=ns
+        	set rFile=##class(Studio.Remote.File).%New()
+        	do rFile.Content.CopyFrom(temp)
+        	set rFile.ContentType=temp.RoutineType 
+        	do rFile.Write()
+		}
+	}
+    catch (e) {
+        set st=e.AsStatus()
+    }
+    Q st
+]]></Implementation>
+</Method>
+
+<Method name="GetCSP">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	s NameSpace=%request.Get("NameSpace","")
+	s Name=%request.Get("Name","")
+
+	try {
+		if (NameSpace'="")&&(Name'=""){
+			//S WebAPP=$LIST($LISTFROMSTRING(Name,"|"),1)
+			//S Target=$LIST($LISTFROMSTRING(Name,"|"),2)
+			//s ns=$namespace
+			//s $namespace="%SYS"
+			//k csp s csp = ##class(Security.Applications).Get(WebAPP,.csp)
+			//s Path=$g(csp("Path"))
+			//s $namespace=ns
+
+			s temp=##class(%Stream.FileBinary).%New()		
+			s temp.Filename=$$GetFilename^%apiCSP(Name) ///$E(Path_Target,1,*-1)
+        	set rFile=##class(Studio.Remote.File).%New()
+        	do rFile.Content.CopyFrom(temp)
+        	set rFile.ContentType=$LIST($LISTFROMSTRING(temp.Id,"."),*,*)
+        	do rFile.Write()
+        	
+
+		}	
+	} 
+    catch (e) {
+        set st=e.AsStatus()
+    }
+
+    Q st
+]]></Implementation>
+</Method>
+
+<Method name="GetOther">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st as %Status=$$$OK
+	s NameSpace=%request.Get("NameSpace","")
+	s Name=%request.Get("Name","")
+	
+	set rFile=##class(Studio.Remote.File).%New()
+    
+    set rFile.ContentType="DFI"
+    
+	s ns=$namespace
+	s $namespace=NameSpace
+	s temp=##class(%Stream.FileBinary).%New()
+	do ##class(%DeepSee.UserLibrary.Utils).%Export(Name,temp)
+	s $namespace=ns
+	do rFile.Content.CopyFrom(temp)
+	do rFile.Write()
+	Quit st
+]]></Implementation>
+</Method>
+</Class>
+</Export>

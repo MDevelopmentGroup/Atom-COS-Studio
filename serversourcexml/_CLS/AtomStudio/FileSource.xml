@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="AtomStudio.FileSource">
+<Super>%RegisteredObject,AtomStudio.Base</Super>
+<TimeCreated>63490,63013.089929</TimeCreated>
+
+<Method name="GetSource">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	#dim Target As %String=""
+	#dim obj As %ZEN.proxyObject
+	$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+	s Target=obj.target
+	if Target=..#Class {do ..GetClass(obj.namespace,obj.name)}
+	elseif Target=..#Routine {do ..GetRoutine(obj.namespace,obj.name)}
+	elseif Target=..#CSP {do ..GetCSP(obj.namespace,obj.name)}
+	elseif Target=..#Other {do ..GetOther(obj.namespace,obj.name)}
+	Quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetClass">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,Name</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	#dim tStream As %Stream.Character
+	try {
+		if (NameSpace'="")&&(Name'=""){
+			s st=##class(%Compiler.UDL.TextServices).GetTextAsStream(NameSpace,Name,.tStream)	
+			set rFile=##class(AtomStudio.FileSource).%New()
+        	do rFile.Content.CopyFrom(tStream)
+        	set rFile.ContentType="CLS"
+        	do rFile.Write()
+		}
+	}
+    catch (e) {
+        set st=e.AsStatus()
+    }
+    Q st
+]]></Implementation>
+</Method>
+
+<Method name="GetRoutine">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,Name</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	try {
+		if (NameSpace'="")&&(Name'=""){
+			s ns=$namespace
+			s $namespace=NameSpace
+        	s temp=##class(%Routine).%OpenId(Name)
+        	s $namespace=ns
+        	set rFile=##class(AtomStudio.FileSource).%New()
+        	do rFile.Content.CopyFrom(temp)
+        	set rFile.ContentType=temp.RoutineType 
+        	do rFile.Write()
+		}
+	}
+    catch (e) {
+        set st=e.AsStatus()
+    }
+    Q st
+]]></Implementation>
+</Method>
+
+<Method name="GetCSP">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,Name</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	try {
+		if (NameSpace'="")&&(Name'=""){
+			s temp=##class(%Stream.FileBinary).%New()		
+			s temp.Filename=$$GetFilename^%apiCSP(Name) 
+        	set rFile=##class(AtomStudio.FileSource).%New()
+        	do rFile.Content.CopyFrom(temp)
+        	set rFile.ContentType=$LIST($LISTFROMSTRING(temp.Id,"."),*,*)
+        	do rFile.Write()
+		}	
+	} 
+    catch (e) {
+        set st=e.AsStatus()
+    }
+
+    Q st
+]]></Implementation>
+</Method>
+
+<Method name="GetOther">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>NameSpace,Name</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st as %Status=$$$OK
+	set rFile=##class(AtomStudio.FileSource).%New()
+    set rFile.ContentType="DFI"
+    
+	s ns=$namespace
+	s $namespace=NameSpace
+	s temp=##class(%Stream.FileBinary).%New()
+	do ##class(%DeepSee.UserLibrary.Utils).%Export(Name,temp)
+	s $namespace=ns
+	do rFile.Content.CopyFrom(temp)
+	do rFile.Write()
+	Quit st
+]]></Implementation>
+</Method>
+</Class>
+</Export>

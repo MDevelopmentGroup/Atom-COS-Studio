@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="Studio.Project">
+<Super>%Persistent</Super>
+<TimeCreated>63459,38766.531755</TimeCreated>
+
+<Method name="GetProject">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>Name</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st AS %Status=$$$OK
+	s pObject=##class(%ZEN.proxyObject).%New()
+	s pObject.Project=##class(%ListOfDataTypes).%New()
+	s res=##class(%ResultSet).%New("Studio.FileView:ProjectItems")
+	s st= res.Execute(Name)
+	while res.Next(){
+		s tObj=##class(%ZEN.proxyObject).%New()
+		s tObj.Name=res.Get("Name")
+		s tObj.Type=res.Get("Type")
+		s st= pObject.Project.Insert(tObj)
+	}
+	s st=pObject.%ToJSON()
+	q st
+]]></Implementation>
+</Method>
+
+<Query name="Class">
+<Type>%SQLQuery</Type>
+<SqlQuery>	SELECT * FROM %Studio.Project</SqlQuery>
+</Query>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^Studio.ProjectD</DataLocation>
+<DefaultData>ProjectDefaultData</DefaultData>
+<IdLocation>^Studio.ProjectD</IdLocation>
+<IndexLocation>^Studio.ProjectI</IndexLocation>
+<StreamLocation>^Studio.ProjectS</StreamLocation>
+<Data name="ProjectDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

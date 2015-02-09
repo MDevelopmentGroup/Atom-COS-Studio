@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="AtomStudio.Project">
+<Super>%RegisteredObject,AtomStudio.Base</Super>
+<TimeCreated>63490,74889.655938</TimeCreated>
+
+<Method name="downloadProject">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	#dim st As %Status=$$$OK
+	#dim obj As %ZEN.proxyObject
+	$$$THROWONERROR(st,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.obj,1))
+	s NameSpace=obj.namespace
+	s SubPackage=obj.project
+	//s Name=%request.Get("Name","")
+	
+
+	
+	s pObject=##class(%ZEN.proxyObject).%New()
+	set pObject.children=##class(%ListOfDataTypes).%New()
+	s ns=$namespace
+	s $namespace=NameSpace
+	s res=##class(%ResultSet).%New("%Studio.Project:ProjectItemsList")
+	d res.Execute(SubPackage)
+	s $namespace=ns
+	while res.Next(){ 
+		//w res.Get("Name"),"  ",res.Get("Type"),"  ",res.Get("InSourceControl"),"  ",res.Get("Package"),"  ",res.Get("CSPApp"),!
+		if (res.Get("Type")="CLS"){
+			if ##class(%Dictionary.ClassDefinition).%ExistsId(res.Get("Name")){
+				s tObj=##class(%ZEN.proxyObject).%New()
+				s st=##class(%Compiler.UDL.TextServices).GetTextAsString(NameSpace,res.Get("Name"),.tText,)
+				s tObj.Source=$System.Encryption.Base64Encode($ZCONVERT(tText,"O","UTF8"))
+				s tName=$LISTFROMSTRING(res.Get("Name"),".")
+				s tObj.relativePath=..#Class_"/"_$LISTTOSTRING($LIST(tName,1,$LL(tName)-1),"/")_"/"_$LISTTOSTRING($LIST(tName,*,*),".")_"."_res.%Get("Type")
+				d pObject.children.Insert(tObj)
+			}
+		}
+		elseif (res.Get("Type")="MAC"){
+			if (##class(%Routine).%ExistsId(res.Get("Name"))){
+				s tObj=##class(%ZEN.proxyObject).%New()
+				s temp=##class(%Library.Routine).%OpenId(res.Get("Name"))
+				s tObj.Source=$System.Encryption.Base64Encode($ZCONVERT(temp.Read(temp.Size),"O","UTF8"))
+				s tObj.Name=res.Get("Name")
+				s tName=$LISTFROMSTRING(res.Get("Name"),".")
+				s jump=1
+				if $ISVALIDNUM($LIST(tName,$LL(tName)-1)){s jump=2}
+				s tObj.relativePath=..#Routine_"/"_$LISTTOSTRING($LIST(tName,1,$LL(tName)-jump),"/")_"."_$LISTTOSTRING($LIST(tName,*-jump+1,*),".")
+				d pObject.children.Insert(tObj) 
+			}
+
+		}
+		elseif (res.Get("Type")="PKG"){}
+		elseif (res.Get("Type")="DIR"){
+			//w "DIR",!
+			if ($list($$getapp^%SYS.cspServer("/"_res.Get("Name")_"/",.path),34)=""){
+			do ..File(res.Get("Name"),.pObject)
+			}
+		}
+		elseif (res.Get("Type")="CSP"){
+			s tObj=##class(%ZEN.proxyObject).%New()
+			s file=##class(%Stream.FileBinary).%New()
+			s file.Filename=$$GetFilename^%apiCSP(res.Get("Name"))
+			s tObj.Source=$System.Encryption.Base64Encode($ZCONVERT(file.Read(file.Size),"O","UTF8"))
+			s tObj.relativePath=..#CSP_"/"_res.Get("Name")
+			s tObj.Name=res.Get("Name")
+			d pObject.children.Insert(tObj)  
+		} 
+		elseif (res.Get("Type")="GBL"){} 
+	}
+	do pObject.%ToJSON()
+
+
+	Q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="File">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[filename:%String,&pObject:%ZEN.proxyObject]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	//zw file
+	If $E(filename,1)'="/" {s filename="/"_filename}
+	s res =##class(%ResultSet).%New("%CSP.Apps:CSPFileSet")
+	d res.Execute(filename)
+	while res.Next() {
+		if res.Get("Type")="F"{
+			s tObj=##class(%ZEN.proxyObject).%New()
+			s file=##class(%Stream.FileBinary).%New()
+			s file.Filename=$$GetFilename^%apiCSP(filename_"/"_res.Get("Name"))
+			s tObj.Source=$System.Encryption.Base64Encode($ZCONVERT(file.Read(file.Size),"O","UTF8"))
+			s tObj.relativePath=..#CSP_filename_"/"_res.Get("Name")
+			s tObj.Name=res.Get("Name")
+			d pObject.children.Insert(tObj)  
+		}
+		else{
+			do ..File(filename_"/"_res.Get("Name"),.pObject)
+		}
+	}
+	Quit $$$OK
+]]></Implementation>
+</Method>
+</Class>
+</Export>

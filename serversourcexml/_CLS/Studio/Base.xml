@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="Studio.Base">
+<Abstract>1</Abstract>
+<TimeCreated>63476,53160.064702</TimeCreated>
+
+<Parameter name="Class">
+<Description>
+Display Name of Class - Class</Description>
+<Default>Class</Default>
+</Parameter>
+
+<Parameter name="Routine">
+<Description>
+Display Name of Routine - Routine</Description>
+<Default>Routine</Default>
+</Parameter>
+
+<Parameter name="CSP">
+<Description>
+Display Name of CSP - CSP</Description>
+<Default>CSP</Default>
+</Parameter>
+
+<Parameter name="Other">
+<Description>
+Display Name of Other - Other</Description>
+<Default>Other</Default>
+</Parameter>
+
+<Parameter name="Replace">
+<Description><![CDATA[
+Replace "%" -> "@" (URL)]]></Description>
+<Default>@</Default>
+</Parameter>
+
+<Parameter name="rFolder">
+<Description><![CDATA[
+	(WebApp)->(Folder)
+Replace "/" -> "@"  ]]></Description>
+<Default>'</Default>
+</Parameter>
+</Class>
+</Export>
